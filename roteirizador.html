@@ -8,134 +8,415 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root { --bg-color: #f0f2f5; --text-color: #333; --panel-bg: #fff; --border-color: #ddd; --header-bg: #6200ea; --header-bg-2: #0277bd; --btn-bg: #6200ea; --btn-hover: #3700b3; --table-header: #333; --table-row-alt: #f1f1f1; --input-bg: #fff; --input-border: #ccc; }
-        body.dark-mode { --bg-color: #121212; --text-color: #e0e0e0; --panel-bg: #1e1e1e; --border-color: #444; --header-bg: #4a148c; --header-bg-2: #01579b; --btn-bg: #7c4dff; --btn-hover: #651fff; --table-header: #212121; --table-row-alt: #2c2c2c; --input-bg: #333; --input-border: #555; }
+        :root {
+            --bg: #f4f6fb;
+            --text: #1a1d2e;
+            --text-sub: #6b7194;
+            --panel: #ffffff;
+            --panel-border: rgba(0,0,0,0.06);
+            --panel-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+            --accent: #4f5aff;
+            --accent-hover: #3b45e0;
+            --accent-soft: rgba(79,90,255,0.08);
+            --accent2: #00b893;
+            --accent2-hover: #009a7b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #22c55e;
+            --info: #3b82f6;
+            --input-bg: #f8f9fc;
+            --input-border: #e2e5f1;
+            --table-header: #1a1d2e;
+            --table-alt: #f8f9fc;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-xs: 6px;
+        }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: 0.3s; }
-        .container { max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative; }
-        h1, h2, h3 { color: var(--text-color); margin-top: 0; }
-        
-        #themeToggle { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
-        
-        .painel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .bloco { background: var(--panel-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .bloco-header { background: var(--header-bg); color: white; padding: 10px; margin: -15px -15px 15px -15px; border-radius: 8px 8px 0 0; font-weight: bold; }
-        .bloco-header.config { background: var(--header-bg-2); }
-        
-        input[type="text"], input[type="number"], input[type="file"], select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
-        button { padding: 10px 15px; background: var(--btn-bg); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { background: var(--btn-hover); }
-        button.secundario { background: #00897b; margin-top: 5px; }
-        button.secundario:hover { background: #00695c; }
-        button.acao-pequena { padding: 4px 8px; width: auto; font-size: 11px; margin-left: 5px; background: #555; }
-        button.remover { background: #d32f2f; }
-        button.editar { background: #f57c00; }
-        
-        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; padding: 10px; background: rgba(128, 128, 128, 0.1); border-radius: 5px; }
-        .checkbox-group label { display: flex; align-items: center; font-size: 13px; cursor: pointer; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);}
-        .checkbox-group input { width: auto; margin-right: 5px; margin-bottom: 0; }
+        body.dark-mode {
+            --bg: #0f1117;
+            --text: #e4e6f0;
+            --text-sub: #7d82a6;
+            --panel: #1a1c28;
+            --panel-border: rgba(255,255,255,0.06);
+            --panel-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.3);
+            --accent: #6c75ff;
+            --accent-hover: #8b92ff;
+            --accent-soft: rgba(108,117,255,0.12);
+            --input-bg: #12141e;
+            --input-border: #2a2d3e;
+            --table-header: #13151f;
+            --table-alt: #14161f;
+        }
 
-        #listaEquipes { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; max-height: 150px; }
-        #listaEquipes li { background: var(--table-row-alt); padding: 8px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-left: 4px solid var(--btn-bg); }
-        
-        #map { height: 500px; width: 100%; border-radius: 8px; border: 2px solid var(--border-color); z-index: 1; }
-        
-        .modal-base { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel-bg); color: var(--text-color); padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; width: 340px; border: 1px solid var(--border-color); }
-        #modalOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .table-responsive { overflow-x: auto; margin-top: 20px; }
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* === HEADER === */
+        .app-header {
+            background: var(--panel);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+        }
+        .app-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-header h1 .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+        #themeToggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        #themeToggle:hover { background: var(--accent-soft); }
+
+        /* === LAYOUT === */
+        .app-container { max-width: 1480px; margin: 0 auto; padding: 24px; }
+        .painel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+        /* === CARD === */
+        .bloco {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .bloco-header {
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--panel-border);
+            color: var(--text);
+            background: var(--accent-soft);
+        }
+        .bloco-header .step-num {
+            width: 24px; height: 24px; border-radius: 6px;
+            background: var(--accent); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+        }
+        .bloco-header.config { background: rgba(0,184,147,0.08); }
+        .bloco-header.config .step-num { background: var(--accent2); }
+        .bloco-header.action { background: rgba(34,197,94,0.08); }
+        .bloco-header.action .step-num { background: var(--success); }
+        .bloco-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+
+        /* === INPUTS === */
+        label.field-label {
+            font-size: 12px; font-weight: 600; color: var(--text-sub);
+            margin-bottom: 5px; display: block;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        input[type="text"], input[type="number"], input[type="file"], select {
+            width: 100%; padding: 10px 12px; margin-bottom: 12px;
+            border: 1.5px solid var(--input-border); background: var(--input-bg);
+            color: var(--text); border-radius: var(--radius-xs);
+            font-family: inherit; font-size: 13px;
+            transition: border 0.2s; outline: none;
+        }
+        input:focus, select:focus { border-color: var(--accent); }
+
+        /* === BUTTONS === */
+        button {
+            font-family: inherit; padding: 10px 16px;
+            background: var(--accent); color: white; border: none;
+            border-radius: var(--radius-xs); cursor: pointer;
+            font-weight: 600; font-size: 13px; width: 100%;
+            transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        button.secundario { background: var(--accent2); }
+        button.secundario:hover { background: var(--accent2-hover); }
+        button.btn-gerar {
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            font-size: 14px; padding: 13px 20px; border-radius: var(--radius-sm);
+        }
+        button.btn-gerar:hover { opacity: 0.9; }
+        button.btn-sm { padding: 5px 10px; width: auto; font-size: 11px; border-radius: 6px; }
+        button.btn-danger { background: var(--danger); }
+        button.btn-edit { background: var(--warning); color: #1a1d2e; }
+        button.btn-cancel { background: #6b7194; }
+
+        /* === CHECKBOX GROUP === */
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .checkbox-group label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; cursor: pointer; padding: 6px 10px;
+            border-radius: 20px; border: 1.5px solid var(--input-border);
+            background: var(--input-bg); transition: all 0.15s; user-select: none;
+        }
+        .checkbox-group label:hover { border-color: var(--accent); background: var(--accent-soft); }
+        .checkbox-group input[type="checkbox"] { display: none; }
+        .checkbox-group label.checked {
+            background: var(--accent-soft); border-color: var(--accent);
+            color: var(--accent); font-weight: 600;
+        }
+
+        /* === EQUIPE LIST === */
+        #listaEquipes { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; max-height: 155px; }
+        #listaEquipes::-webkit-scrollbar { width: 4px; }
+        #listaEquipes::-webkit-scrollbar-thumb { background: var(--input-border); border-radius: 10px; }
+        #listaEquipes li {
+            background: var(--input-bg); padding: 10px 12px; margin-bottom: 6px;
+            border-radius: var(--radius-xs); display: flex;
+            justify-content: space-between; align-items: center;
+            font-size: 13px; border-left: 4px solid var(--accent); transition: 0.15s;
+        }
+        #listaEquipes li:hover { background: var(--accent-soft); }
+        .equipe-actions { display: flex; gap: 4px; }
+
+        /* === HINT BOX === */
+        .hint-box {
+            padding: 10px 14px; background: rgba(245, 158, 11, 0.08);
+            border-left: 3px solid var(--warning);
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+            font-size: 12px; color: var(--text-sub); margin-bottom: 12px;
+        }
+        .hint-box label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; }
+
+        /* === MAP === */
+        .map-wrapper {
+            border-radius: var(--radius); overflow: hidden;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow); margin-bottom: 24px;
+        }
+        #map { height: 500px; width: 100%; z-index: 1; }
+
+        /* === TABLE === */
+        .table-section {
+            background: var(--panel); border-radius: var(--radius);
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow); overflow: hidden;
+        }
+        .table-section-header {
+            padding: 16px 20px; font-weight: 700; font-size: 15px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; white-space: nowrap; color: var(--text-color); }
-        th { background-color: var(--table-header); color: white; }
-        .row-equipe td { background-color: var(--table-row-alt); font-weight: bold; border-top: 2px solid var(--btn-bg); }
-        
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; color: white; font-weight: bold; margin-left: 5px; display: inline-block;}
-        .badge-cedo { background: #ff9800; }
-        .badge-retro { background: #795548; }
-        .badge-rede { background: #f44336; }
-        .badge-apoio { background: #2196F3; }
-        .badge-bloq { background: #000; }
-        
-        @media (max-width: 900px) { .painel-grid { grid-template-columns: 1fr; } }
+        th {
+            background: var(--table-header); color: white; padding: 10px 14px;
+            text-align: left; white-space: nowrap; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+        }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--panel-border); white-space: nowrap; color: var(--text); }
+        tr:hover td { background: var(--accent-soft); }
+        .row-equipe td {
+            background: var(--table-alt) !important; font-weight: 700;
+            border-top: 2px solid var(--accent); font-size: 14px; padding: 12px 14px;
+        }
+        .row-restrita td { background: var(--input-bg) !important; color: var(--text-sub) !important; opacity: 0.7; }
+
+        /* === BADGES === */
+        .badge {
+            font-size: 10px; padding: 3px 8px; border-radius: 20px;
+            color: white; font-weight: 700; margin-left: 4px;
+            display: inline-flex; align-items: center; gap: 3px; letter-spacing: 0.2px;
+        }
+        .badge-cedo { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .badge-retro { background: linear-gradient(135deg, #78716c, #57534e); }
+        .badge-rede { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .badge-apoio { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .badge-bloq { background: #6b7194; }
+
+        .sit-vencida { background: #ef4444; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .sit-critica { background: #f97316; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .sit-atencao { background: #eab308; color: #1a1d2e; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .sit-ok { background: #22c55e; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .sit-folgada { background: #3b82f6; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+        /* === MODAIS === */
+        #modalOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999;
+        }
+        .modal-base {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--panel); color: var(--text);
+            padding: 24px; border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000; width: 380px; border: 1px solid var(--panel-border);
+        }
+        .modal-base h3 { margin: 0 0 16px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+        #modalReordenar { max-height: 80vh; overflow-y: auto; width: 460px; }
+        #modalReordenar .equipe-reorder-section {
+            margin-bottom: 14px; padding: 14px;
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-sm); background: var(--input-bg);
+        }
+        #modalReordenar .equipe-reorder-section h4 { margin: 0 0 10px 0; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        #modalReordenar .os-inicio-btn {
+            display: block; width: 100%; text-align: left;
+            padding: 8px 12px; margin-bottom: 4px;
+            background: var(--panel); color: var(--text);
+            border: 1.5px solid var(--input-border);
+            border-radius: var(--radius-xs); cursor: pointer;
+            font-size: 12px; font-weight: normal; font-family: inherit; transition: 0.15s;
+        }
+        #modalReordenar .os-inicio-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+        #modalReordenar .os-inicio-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* === STATUS === */
+        .status-roteirizado { color: var(--success); font-weight: 600; }
+        .status-fila { color: var(--warning); font-weight: 600; }
+        .status-bloqueada { color: var(--text-sub); font-weight: 700; }
+        .status-sem-mapa { color: var(--danger); font-weight: 700; }
+        .ordem-num {
+            background: var(--accent-soft); color: var(--accent);
+            font-weight: 700; padding: 2px 8px; border-radius: 4px;
+            font-size: 12px; font-family: 'JetBrains Mono', monospace;
+        }
+        .backup-row { display: flex; gap: 8px; margin-top: auto; }
+
+        @media (max-width: 1100px) { .painel-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px) {
+            .painel-grid { grid-template-columns: 1fr; }
+            .app-header { padding: 12px 16px; }
+            .app-container { padding: 16px; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bloco { animation: fadeInUp 0.4s ease-out backwards; }
+        .bloco:nth-child(1) { animation-delay: 0s; }
+        .bloco:nth-child(2) { animation-delay: 0.08s; }
+        .bloco:nth-child(3) { animation-delay: 0.16s; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<header class="app-header">
+    <h1>
+        <span class="logo-icon">⚡</span>
+        Roteirizador PRO MAX
+    </h1>
     <button id="themeToggle" onclick="toggleTheme()" title="Alternar Tema">🌙</button>
-    <h1>🚀 Roteirizador PRO MAX (Comboio e Retro)</h1>
-    
+</header>
+
+<div class="app-container">
     <div class="painel-grid">
         <div class="bloco">
-            <div class="bloco-header">👥 1. Equipes</div>
-            <input type="text" id="nomeEquipe" placeholder="Nome (Ex: Alfa - 01)">
-            <div class="checkbox-group" id="atributosEquipe">
-                <label><input type="checkbox" value="Pegar cedo"> Pegar cedo</label>
-                <label><input type="checkbox" value="Retro"> Retro</label>
-                <label><input type="checkbox" value="Desempenho"> Desempenho</label>
-            </div>
-            <div style="display: flex; gap: 5px;">
-                <button id="btnSalvarEquipe" onclick="salvarEquipe()">+ Adicionar</button>
-                <button id="btnCancelarEdicao" onclick="cancelarEdicaoEquipe()" style="display:none; background:#999;">Cancelar</button>
-            </div>
-            <ul id="listaEquipes" style="margin-top: 15px;"></ul>
-        </div>
-
-        <div class="bloco config-area">
-            <div class="bloco-header config">⚙️ 2. Regras de Negócio</div>
-            
-            <label style="margin-top: 5px;">Estratégia Exclusiva Retro:</label>
-            <select id="configEstrategiaRetro">
-                <option value="vencidas">Focar em Vencidas (Antigas)</option>
-                <option value="quantidade">Focar em Desempenho (Quantidade/Proximidade)</option>
-            </select>
-
-            <label style="margin-top: 10px;">Raio Máx. entre OS (Km):</label>
-            <input type="number" id="configMaxDist" value="20" min="1" max="100">
-            
-            <div style="margin-top: 10px; padding: 10px; background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; border-radius: 4px;">
-                <label style="cursor: pointer; margin-bottom: 0; display:flex; align-items:center;">
-                    <input type="checkbox" id="configTravarCidade" checked> Forçar equipe na mesma Cidade
-                </label>
+            <div class="bloco-header"><span class="step-num">1</span> Equipes</div>
+            <div class="bloco-body">
+                <label class="field-label">Nome da equipe</label>
+                <input type="text" id="nomeEquipe" placeholder="Ex: Alfa - 01">
+                <label class="field-label">Atributos</label>
+                <div class="checkbox-group" id="atributosEquipe">
+                    <label onclick="this.classList.toggle('checked')"><input type="checkbox" value="Pegar cedo"><span>☀️ Pegar cedo</span></label>
+                    <label onclick="this.classList.toggle('checked')"><input type="checkbox" value="Retro"><span>🚜 Retro</span></label>
+                    <label onclick="this.classList.toggle('checked')"><input type="checkbox" value="Desempenho"><span>📊 Desempenho</span></label>
+                </div>
+                <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+                    <button id="btnSalvarEquipe" onclick="salvarEquipe()">+ Adicionar</button>
+                    <button id="btnCancelarEdicao" onclick="cancelarEdicaoEquipe()" class="btn-cancel" style="display:none;">Cancelar</button>
+                </div>
+                <ul id="listaEquipes"></ul>
             </div>
         </div>
 
         <div class="bloco">
-            <div class="bloco-header">📂 3. Roteirização e Backup</div>
-            <label>Carregar Planilha (.xlsx):</label>
-            <input type="file" id="excelFile" accept=".xlsx, .xls">
-            <button onclick="processarExcel()" style="margin-bottom: 15px; background: #00c853;">🗺️ Gerar Rota Inteligente</button>
-            
-            <div style="display: flex; gap: 10px; margin-top: auto;">
-                <button class="secundario" onclick="exportarBackup()">💾 Backup Geral</button>
-                <input type="file" id="importJson" accept=".json" style="display:none" onchange="importarBackup(event)">
-                <button class="secundario" onclick="document.getElementById('importJson').click()">📁 Restaurar</button>
+            <div class="bloco-header config"><span class="step-num">2</span> Regras de Negócio</div>
+            <div class="bloco-body">
+                <label class="field-label">Estratégia Retro</label>
+                <select id="configEstrategiaRetro">
+                    <option value="vencidas">Focar em Vencidas (Antigas)</option>
+                    <option value="quantidade">Focar em Desempenho (Qtd/Proximidade)</option>
+                </select>
+                <label class="field-label">Raio Máx. entre OS (Km)</label>
+                <input type="number" id="configMaxDist" value="20" min="1" max="100">
+                <div class="hint-box">
+                    <label>
+                        <input type="checkbox" id="configTravarCidade" checked style="width:auto; margin:0;">
+                        <span>Forçar equipe na mesma Cidade</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="bloco">
+            <div class="bloco-header action"><span class="step-num">3</span> Roteirização e Backup</div>
+            <div class="bloco-body">
+                <label class="field-label">Planilha de OS (.xlsx)</label>
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+                <button class="btn-gerar" onclick="processarExcel()" style="margin-bottom: 16px;">⚡ Gerar Rota Inteligente</button>
+                <div class="backup-row">
+                    <button class="secundario" onclick="exportarBackup()">💾 Backup</button>
+                    <input type="file" id="importJson" accept=".json" style="display:none" onchange="importarBackup(event)">
+                    <button class="secundario" onclick="document.getElementById('importJson').click()">📁 Restaurar</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="map"></div>
+    <div class="map-wrapper"><div id="map"></div></div>
 
-    <div class="table-responsive">
-        <h2>📊 Tabela de Despacho</h2>
-        <table id="tabelaRotas">
-            <thead>
-                <tr>
-                    <th>Equipe</th>
-                    <th>#</th>
-                    <th>OS</th>
-                    <th>Cidade</th>
-                    <th>Bairro</th>
-                    <th>Classificação</th>
-                    <th>Geração</th>
-                    <th>Vencimento</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="table-section">
+        <div class="table-section-header">📊 Tabela de Despacho</div>
+        <div class="table-responsive">
+            <table id="tabelaRotas">
+                <thead><tr>
+                    <th>Equipe</th><th>#</th><th>OS</th><th>Cidade</th><th>Bairro</th>
+                    <th>Classificação</th><th>Geração</th><th>Vencimento</th><th>Situação</th><th>Status</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -143,27 +424,36 @@
 
 <div id="modalMapa" class="modal-base">
     <h3>📍 Mapear Novo Bairro</h3>
+    <label class="field-label">Cidade</label>
     <input type="text" id="inputCidade" placeholder="CIDADE">
+    <label class="field-label">Bairro</label>
     <input type="text" id="inputBairro" placeholder="BAIRRO">
-    <div style="display: flex; justify-content: space-between; gap: 10px;">
+    <div style="display: flex; gap: 8px;">
         <button onclick="salvarBairro()">Salvar Local</button>
-        <button onclick="fecharModais()" style="background: #999;">Cancelar</button>
+        <button onclick="fecharModais()" class="btn-cancel">Cancelar</button>
     </div>
 </div>
 
-<div id="modalApoioPre" class="modal-base" style="border: 2px solid #2196F3;">
-    <h3 style="color: #2196F3; margin-top:0;">🤝 Alocação de Comboio</h3>
-    <p id="textoModalApoioPre" style="font-size: 13px;"></p>
-    
-    <label style="font-weight: bold; font-size: 12px;">Equipe Principal (Dona da OS):</label>
+<div id="modalApoioPre" class="modal-base" style="border-top: 3px solid var(--info);">
+    <h3 style="color: var(--info);">🤝 Alocação de Comboio</h3>
+    <p id="textoModalApoioPre" style="font-size: 13px; margin-bottom: 14px; color: var(--text-sub);"></p>
+    <label class="field-label">Equipe Principal (Dona da OS)</label>
     <select id="selectEqPrimaria"></select>
-    
-    <label style="font-weight: bold; font-size: 12px; margin-top:10px;">Equipe de Apoio:</label>
+    <label class="field-label">Equipe de Apoio</label>
     <select id="selectEqApoio"></select>
-    
-    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 15px;">
-        <button onclick="confirmarApoioPre()" style="background: #2196F3;">Confirmar Comboio</button>
-        <button onclick="pularApoioPre()" style="background: #999;">Pular e deixar na Fila</button>
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 14px;">
+        <button onclick="confirmarApoioPre()" style="background: var(--info);">Confirmar Comboio</button>
+        <button onclick="pularApoioPre()" class="btn-cancel">Pular e deixar na Fila</button>
+    </div>
+</div>
+
+<div id="modalReordenar" class="modal-base" style="border-top: 3px solid var(--success);">
+    <h3 style="color: var(--success);">🔄 Reordenar Rotas</h3>
+    <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 14px;">Escolha por qual OS cada equipe deve começar. A rota será reordenada por proximidade a partir dela.</p>
+    <div id="conteudoReordenar"></div>
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 14px;">
+        <button onclick="confirmarReordenacao()" style="background: var(--success);">✅ Aplicar Reordenação</button>
+        <button onclick="pularReordenacao()" class="btn-cancel">Manter Ordem Original</button>
     </div>
 </div>
 
@@ -188,7 +478,7 @@
     function salvarEstadoGeral() { localStorage.setItem('appRoteirizadorData', JSON.stringify({ dbBairros, equipes })); }
 
     // --- GERENCIAMENTO DE EQUIPES ---
-    const coresRotas = ['#E53935', '#1E88E5', '#43A047', '#8E24AA', '#F4511E', '#00ACC1', '#3949AB'];
+    const coresRotas = ['#4f5aff', '#ef4444', '#22c55e', '#a855f7', '#f97316', '#06b6d4', '#ec4899'];
     
     function salvarEquipe() {
         let nome = document.getElementById('nomeEquipe').value.trim();
@@ -206,14 +496,21 @@
     function editarEquipe(index) {
         editIndex = index; let eq = equipes[index];
         document.getElementById('nomeEquipe').value = eq.nome;
-        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => { cb.checked = eq.atributos.includes(cb.value); });
-        document.getElementById('btnSalvarEquipe').innerText = "Salvar Edição"; document.getElementById('btnCancelarEdicao').style.display = "block";
+        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => {
+            cb.checked = eq.atributos.includes(cb.value);
+            cb.closest('label').classList.toggle('checked', cb.checked);
+        });
+        document.getElementById('btnSalvarEquipe').innerText = "Salvar Edição";
+        document.getElementById('btnCancelarEdicao').style.display = "block";
     }
 
     function cancelarEdicaoEquipe() {
         editIndex = -1; document.getElementById('nomeEquipe').value = '';
-        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => cb.checked = false);
-        document.getElementById('btnSalvarEquipe').innerText = "+ Adicionar"; document.getElementById('btnCancelarEdicao').style.display = "none";
+        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => {
+            cb.checked = false; cb.closest('label').classList.remove('checked');
+        });
+        document.getElementById('btnSalvarEquipe').innerText = "+ Adicionar";
+        document.getElementById('btnCancelarEdicao').style.display = "none";
     }
 
     function removerEquipe(index) { equipes.splice(index, 1); salvarEstadoGeral(); atualizarListaEquipes(); }
@@ -221,10 +518,13 @@
     function atualizarListaEquipes() {
         let ul = document.getElementById('listaEquipes'); ul.innerHTML = '';
         equipes.forEach((eq, index) => {
-            let atrTxt = eq.atributos.length > 0 ? eq.atributos.join(' | ') : 'Padrão';
-            ul.innerHTML += `<li>
-                <span><span style="color:${eq.cor}; font-size:16px;">■</span> <strong>${eq.nome}</strong> <br><span style="font-size:11px; color:#888;">(${atrTxt})</span></span>
-                <div><button class="acao-pequena editar" onclick="editarEquipe(${index})">✎</button><button class="acao-pequena remover" onclick="removerEquipe(${index})">X</button></div>
+            let atrTxt = eq.atributos.length > 0 ? eq.atributos.join(' · ') : 'Padrão';
+            ul.innerHTML += `<li style="border-left-color:${eq.cor};">
+                <div><strong style="color:${eq.cor};">${eq.nome}</strong><br><span style="font-size:11px; color:var(--text-sub);">${atrTxt}</span></div>
+                <div class="equipe-actions">
+                    <button class="btn-sm btn-edit" onclick="editarEquipe(${index})">✎</button>
+                    <button class="btn-sm btn-danger" onclick="removerEquipe(${index})">✕</button>
+                </div>
             </li>`;
         });
     }
@@ -252,23 +552,41 @@
     // --- MAPA ---
     let tempLat = null, tempLng = null, polylineLayers = [];
     const map = L.map('map').setView([-22.85, -42.05], 10); 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-    for (const cid in dbBairros) { for (const bai in dbBairros[cid]) { L.marker([dbBairros[cid][bai].lat, dbBairros[cid][bai].lng]).addTo(map).bindPopup(`${bai} (${cid})`); } }
-
-    map.on('click', function(e) { tempLat = e.latlng.lat; tempLng = e.latlng.lng; document.getElementById('modalMapa').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; });
-    function fecharModais() { document.querySelectorAll('.modal-base').forEach(m => m.style.display = 'none'); document.getElementById('modalOverlay').style.display = 'none'; }
-    function salvarBairro() {
-        let c = document.getElementById('inputCidade').value.trim().toUpperCase(); let b = document.getElementById('inputBairro').value.trim().toUpperCase();
-        if(!c || !b) return; if (!dbBairros[c]) dbBairros[c] = {}; dbBairros[c][b] = { lat: tempLat, lng: tempLng };
-        salvarEstadoGeral(); L.marker([tempLat, tempLng]).addTo(map).bindPopup(`${b} (${c})`); fecharModais();
+    for (const cid in dbBairros) {
+        for (const bai in dbBairros[cid]) {
+            L.marker([dbBairros[cid][bai].lat, dbBairros[cid][bai].lng]).addTo(map).bindPopup(`<strong>${bai}</strong><br>${cid}`);
+        }
     }
 
-    // --- PROCESSAMENTO (Excel -> Apoio -> Algoritmo) ---
+    map.on('click', function(e) {
+        tempLat = e.latlng.lat; tempLng = e.latlng.lng;
+        document.getElementById('modalMapa').style.display = 'block';
+        document.getElementById('modalOverlay').style.display = 'block';
+    });
+
+    function fecharModais() {
+        document.querySelectorAll('.modal-base').forEach(m => m.style.display = 'none');
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function salvarBairro() {
+        let c = document.getElementById('inputCidade').value.trim().toUpperCase();
+        let b = document.getElementById('inputBairro').value.trim().toUpperCase();
+        if(!c || !b) return;
+        if (!dbBairros[c]) dbBairros[c] = {};
+        dbBairros[c][b] = { lat: tempLat, lng: tempLng };
+        salvarEstadoGeral();
+        L.marker([tempLat, tempLng]).addTo(map).bindPopup(`<strong>${b}</strong><br>${c}`);
+        fecharModais();
+    }
+
+    // --- PROCESSAMENTO ---
     async function processarExcel() {
         if (equipes.length === 0) { alert("Adicione pelo menos uma equipe!"); return; }
-        const fileInput = document.getElementById('excelFile'); if (!fileInput.files[0]) { alert("Selecione um arquivo Excel"); return; }
-        
+        const fileInput = document.getElementById('excelFile');
+        if (!fileInput.files[0]) { alert("Selecione um arquivo Excel"); return; }
         const reader = new FileReader();
         reader.onload = async function(e) {
             const data = new Uint8Array(e.target.result);
@@ -280,25 +598,36 @@
     }
 
     function parseDateCustom(val) {
-        if (!val) return new Date(); if (val instanceof Date) return val;
+        if (!val) return new Date();
+        if (val instanceof Date) return val;
         if (typeof val === 'number') return new Date(Math.round((val - 25569)*86400*1000));
-        let parts = String(val).split('/'); if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+        let parts = String(val).split('/');
+        if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
         return new Date(val);
     }
 
-    // Promessa para pausar o código e esperar o clique do usuário no Apoio
+    function getSituacaoVencimento(diasVencido) {
+        if (diasVencido > 5) return { label: '🔴 Vencida', classe: 'sit-vencida' };
+        if (diasVencido > 0) return { label: '🟠 Crítica', classe: 'sit-critica' };
+        if (diasVencido >= -2) return { label: '⚠️ Quase', classe: 'sit-atencao' };
+        if (diasVencido >= -7) return { label: '✅ No Prazo', classe: 'sit-ok' };
+        return { label: '🔵 Folgada', classe: 'sit-folgada' };
+    }
+
+    function gerarBadgeSituacao(os) {
+        let sit = getSituacaoVencimento(os.diasVencido);
+        return `<span class="${sit.classe}">${sit.label}</span>`;
+    }
+
+    // --- MODAIS DE APOIO ---
     let resolveApoioPre = null;
     function pedirApoioUsuario(os, equipesDisponiveis) {
         return new Promise(resolve => {
-            document.getElementById('textoModalApoioPre').innerHTML = `A OS <strong>${os.os}</strong> (${os.cidade} - ${os.bairro}) exige APOIO.<br>Escolha as equipes "Pegar Cedo" para o serviço:`;
-            
+            document.getElementById('textoModalApoioPre').innerHTML = `A OS <strong>${os.os}</strong> (${os.cidade} - ${os.bairro}) exige APOIO.<br>Escolha as equipes para o serviço:`;
             let options = equipesDisponiveis.map(e => `<option value="${e.nome}">${e.nome}</option>`).join('');
             document.getElementById('selectEqPrimaria').innerHTML = options;
             document.getElementById('selectEqApoio').innerHTML = options;
-            
-            // Pré-selecionar a 2ª opção para o apoio, se existir, pra facilitar
             if(equipesDisponiveis.length > 1) document.getElementById('selectEqApoio').selectedIndex = 1;
-            
             document.getElementById('modalApoioPre').style.display = 'block';
             document.getElementById('modalOverlay').style.display = 'block';
             resolveApoioPre = resolve;
@@ -311,30 +640,95 @@
         if (eq1 === eq2) { alert("A equipe principal e a equipe de apoio não podem ser a mesma!"); return; }
         fecharModais(); if(resolveApoioPre) resolveApoioPre({eqPrimariaNome: eq1, eqApoioNome: eq2});
     }
+    function pularApoioPre() { fecharModais(); if(resolveApoioPre) resolveApoioPre(null); }
 
-    function pularApoioPre() {
-        fecharModais(); if(resolveApoioPre) resolveApoioPre(null); // Retorna null para pular e deixar na fila
+    // --- MODAL DE REORDENAÇÃO ---
+    let resolveReordenar = null;
+    let reordenacaoEscolhas = {};
+
+    function pedirReordenacao(rotasEquipes) {
+        return new Promise(resolve => {
+            reordenacaoEscolhas = {};
+            let container = document.getElementById('conteudoReordenar');
+            container.innerHTML = '';
+            let temEquipeComRota = false;
+            rotasEquipes.forEach(re => {
+                if (re.rota.length < 2) return;
+                temEquipeComRota = true;
+                let section = document.createElement('div');
+                section.className = 'equipe-reorder-section';
+                section.innerHTML = `<h4 style="color:${re.equipe.cor};">🚐 ${re.equipe.nome}</h4>`;
+                re.rota.forEach((os, idx) => {
+                    let btn = document.createElement('button');
+                    btn.className = 'os-inicio-btn';
+                    btn.dataset.equipe = re.equipe.nome;
+                    btn.dataset.index = idx;
+                    let sit = getSituacaoVencimento(os.diasVencido);
+                    btn.innerHTML = `<strong>${idx+1}º</strong> — OS ${os.os} | ${os.bairro} (${os.cidade}) <span class="${sit.classe}" style="float:right;">${sit.label}</span>`;
+                    btn.onclick = function() {
+                        section.querySelectorAll('.os-inicio-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        reordenacaoEscolhas[re.equipe.nome] = idx;
+                    };
+                    section.appendChild(btn);
+                });
+                container.appendChild(section);
+            });
+            if (!temEquipeComRota) { resolve(null); return; }
+            document.getElementById('modalReordenar').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+            resolveReordenar = resolve;
+        });
     }
 
+    function confirmarReordenacao() { fecharModais(); if (resolveReordenar) resolveReordenar(reordenacaoEscolhas); }
+    function pularReordenacao() { fecharModais(); if (resolveReordenar) resolveReordenar(null); }
+
+    function reordenarRotaPorProximidade(rota, startIndex) {
+        if (startIndex < 0 || startIndex >= rota.length) return rota;
+        let novaRota = [rota[startIndex]];
+        let restantes = rota.filter((_, i) => i !== startIndex);
+        while (restantes.length > 0) {
+            let ultimo = novaRota[novaRota.length - 1];
+            let melhorIdx = 0, melhorDist = Infinity;
+            for (let i = 0; i < restantes.length; i++) {
+                let d = haversine(ultimo.lat, ultimo.lng, restantes[i].lat, restantes[i].lng);
+                if (d < melhorDist) { melhorDist = d; melhorIdx = i; }
+            }
+            novaRota.push(restantes.splice(melhorIdx, 1)[0]);
+        }
+        return novaRota;
+    }
+
+    // =====================================================
+    // === ALGORITMO PRINCIPAL (com distribuição equilibrada)
+    // =====================================================
     async function cruzarDadosEAplicarAlgoritmo(ordens) {
         let validOS = []; let pendencias = []; let restritasObs2 = []; let today = new Date(); 
 
         ordens.forEach(os => {
-            let numOS = os['OS'] || '-'; let cidade = (os['Cidade'] || '').trim().toUpperCase(); let bairro = (os['Bairro'] || '').trim().toUpperCase();
-            let dGeracao = parseDateCustom(os['Data de Geração'] || os['Data de Geracao']); let dVenc = parseDateCustom(os['Data de Vencimento']);
+            let numOS = os['OS'] || '-';
+            let cidade = (os['Cidade'] || '').trim().toUpperCase();
+            let bairro = (os['Bairro'] || '').trim().toUpperCase();
+            let dGeracao = parseDateCustom(os['Data de Geração'] || os['Data de Geracao']);
+            let dVenc = parseDateCustom(os['Data de Vencimento']);
             
             let obs1 = (os['Observação 1'] || os['Observacao 1'] || '').toString().toUpperCase();
             let obs2 = (os['Observação 2'] || os['Observacao 2'] || '').toString().trim();
             let fullObs = obs1 + " " + obs2;
 
-            let isPegarCedo = fullObs.includes('PEGAR CEDO'); let isRetro = fullObs.includes('RETRO'); let isApoio = obs1.includes('APOIO');
-            let redeMatch = fullObs.match(/REDE N.O LOCALIZADA\s*\[(.*?)\]/); let isRedeNaoLocalizada = !!redeMatch;
+            let isPegarCedo = fullObs.includes('PEGAR CEDO');
+            let isRetro = fullObs.includes('RETRO');
+            let isApoio = obs1.includes('APOIO');
+            let redeMatch = fullObs.match(/REDE N.O LOCALIZADA\s*\[(.*?)\]/);
+            let isRedeNaoLocalizada = !!redeMatch;
             let canceladasPor = redeMatch ? redeMatch[1].split(',').map(s => s.trim()) : [];
             
             let diasGeracao = Math.floor((today - dGeracao) / (1000 * 60 * 60 * 24));
             let diasVencido = Math.floor((today - dVenc) / (1000 * 60 * 60 * 24));
             
-            let score = 0; if (diasGeracao > 0) score += (diasGeracao * 2); 
+            let score = 0;
+            if (diasGeracao > 0) score += (diasGeracao * 2); 
             if (diasVencido > 0) score += (diasVencido * 15); else score += (diasVencido * 5); 
 
             let osData = { os: numOS, cidade, bairro, geracao: dGeracao.toLocaleDateString(), vencimento: dVenc.toLocaleDateString(), rawScore: score, diasVencido, isPegarCedo, isRetro, isRedeNaoLocalizada, isApoio, canceladasPor };
@@ -342,7 +736,8 @@
             if (obs2.length > 0) { restritasObs2.push(osData); return; }
 
             if (dbBairros[cidade] && dbBairros[cidade][bairro]) {
-                osData.lat = dbBairros[cidade][bairro].lat; osData.lng = dbBairros[cidade][bairro].lng;
+                osData.lat = dbBairros[cidade][bairro].lat;
+                osData.lng = dbBairros[cidade][bairro].lng;
                 validOS.push(osData);
             } else { pendencias.push(osData); }
         });
@@ -350,6 +745,8 @@
         const maxDist = parseFloat(document.getElementById('configMaxDist').value) || 20;
         const travarCidade = document.getElementById('configTravarCidade').checked;
         const estRetro = document.getElementById('configEstrategiaRetro').value;
+        const MIN_POR_EQUIPE = 3;
+        const MAX_POR_EQUIPE = 6;
 
         let unassigned = [...validOS];
         let rotasEquipes = equipes.map(e => ({ equipe: e, rota: [], pegouCedo: false, ignorarProximaDistancia: false }));
@@ -361,95 +758,139 @@
             let equipesCedoLivres = rotasEquipes.filter(re => re.equipe.atributos.includes('Pegar cedo') && !re.pegouCedo);
             if (equipesCedoLivres.length >= 2) {
                 let escolhas = await pedirApoioUsuario(osApoio, equipesCedoLivres.map(r => r.equipe));
-                
                 if (escolhas) {
                     let rePri = rotasEquipes.find(r => r.equipe.nome === escolhas.eqPrimariaNome);
                     let reApoio = rotasEquipes.find(r => r.equipe.nome === escolhas.eqApoioNome);
                     
-                    // Aloca para a Primária
                     rePri.rota.push(osApoio);
                     rePri.pegouCedo = true;
-                    rePri.cidadeBaseEquipe = osApoio.cidade; // Trava a primária nesta cidade
+                    rePri.cidadeBaseEquipe = osApoio.cidade;
                     
-                    // Aloca o Clone para a Apoio
                     let osClone = JSON.parse(JSON.stringify(osApoio)); osClone.isCloneApoio = true;
                     reApoio.rota.push(osClone);
                     reApoio.pegouCedo = true;
-                    reApoio.ignorarProximaDistancia = true; // Permite a equipe de apoio pular para outra cidade na próxima OS
+                    reApoio.ignorarProximaDistancia = true;
 
-                    // Remove da lista geral
                     let idx = unassigned.findIndex(u => u.os === osApoio.os);
                     if(idx > -1) unassigned.splice(idx, 1);
                 }
             }
         }
 
-        // Ordenação base para o loop principal
+        // Ordenação base
         unassigned.sort((a, b) => b.rawScore - a.rawScore); 
 
-        // --- FASE 2: ROTEAMENTO PRINCIPAL ---
-        for (let re of rotasEquipes) {
+        // --- FASE 2: DISTRIBUIÇÃO EQUILIBRADA ---
+        // Função que tenta alocar 1 OS para uma equipe respeitando regras
+        function alocarUmaOS(re) {
+            if (unassigned.length === 0) return false;
+
             let isEqRetro = re.equipe.atributos.includes('Retro');
             let isEqCedo = re.equipe.atributos.includes('Pegar cedo');
             let isEqDesempenho = re.equipe.atributos.includes('Desempenho');
-            
+
             if (re.rota.length > 0 && !re.cidadeBaseEquipe) re.cidadeBaseEquipe = re.rota[0].cidade;
 
-            while (re.rota.length < 6 && unassigned.length > 0) {
-                let bestScore = -Infinity; let bestIndex = -1;
+            let bestScore = -Infinity;
+            let bestIndex = -1;
 
-                for (let i = 0; i < unassigned.length; i++) {
-                    let candidate = unassigned[i];
-                    
-                    // Bloqueios Estritos
-                    if (isEqRetro && !candidate.isRetro && !candidate.isRedeNaoLocalizada) continue;
-                    if (!isEqRetro && candidate.isRetro) continue;
-                    if (candidate.isRedeNaoLocalizada && re.equipe.idNumero && candidate.canceladasPor.includes(re.equipe.idNumero)) continue;
-                    if (candidate.isPegarCedo && (!isEqCedo || re.pegouCedo)) continue;
-                    if (candidate.isApoio) continue; // OS de Apoio ignoradas aqui (ou foram tratadas na Fase 1, ou ficaram pra fila)
+            for (let i = 0; i < unassigned.length; i++) {
+                let candidate = unassigned[i];
+                
+                // === BLOQUEIOS ESTRITOS ===
+                // RETRO: aceita OS retro E rede não localizada (por perto)
+                if (isEqRetro && !candidate.isRetro && !candidate.isRedeNaoLocalizada) continue;
+                if (!isEqRetro && candidate.isRetro) continue;
+                // Não pode pegar rede da própria equipe que cancelou
+                if (candidate.isRedeNaoLocalizada && re.equipe.idNumero && candidate.canceladasPor.includes(re.equipe.idNumero)) continue;
+                if (candidate.isPegarCedo && (!isEqCedo || re.pegouCedo)) continue;
+                if (candidate.isApoio) continue;
 
-                    // Verificação Geográfica (A equipe de apoio pode ignorar essa regra 1 vez)
-                    if (re.rota.length > 0 && !re.ignorarProximaDistancia) {
-                        if (travarCidade && candidate.cidade !== re.cidadeBaseEquipe) continue;
-                        let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
-                        if (distKm > maxDist) continue;
-                    }
-
-                    // PONTUAÇÃO E HIERARQUIA
-                    let score = candidate.rawScore;
-
-                    if (isEqRetro && estRetro === 'quantidade') score = 0; // Zera a idade, foca na proximidade
-
-                    // Hierarquia Suprema da Retro (RETRO > REDE NÃO LOCALIZADA)
-                    if (candidate.isRetro && isEqRetro) score += 80000;
-                    else if (candidate.isRedeNaoLocalizada && isEqRetro) score += 40000;
-                    
-                    if (re.rota.length === 0 && isEqCedo && candidate.isPegarCedo) score += 100000;
-                    if (candidate.isRedeNaoLocalizada && isEqDesempenho) score += 50000;
-
-                    if (re.rota.length > 0) {
-                        let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
-                        // Se for o pulo do Apoio para a nova cidade base, o bônus de cidade é ignorado para permitir liberdade
-                        let bonusCidade = (re.ignorarProximaDistancia || candidate.cidade === re.cidadeBaseEquipe) ? 5000 : 0;
-                        score = score + bonusCidade - (distKm * 100);
-                    }
-
-                    if (score > bestScore) { bestScore = score; bestIndex = i; }
+                // === VERIFICAÇÃO GEOGRÁFICA ===
+                // Retro tem liberdade geográfica para retro E rede não localizada
+                let isRetroLivre = isEqRetro && (candidate.isRetro || candidate.isRedeNaoLocalizada);
+                if (re.rota.length > 0 && !re.ignorarProximaDistancia) {
+                    if (travarCidade && !isRetroLivre && candidate.cidade !== re.cidadeBaseEquipe) continue;
+                    let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
+                    if (distKm > maxDist && !isRetroLivre) continue;
                 }
 
-                if (bestIndex !== -1) {
-                    let escolhida = unassigned.splice(bestIndex, 1)[0];
-                    if (escolhida.isPegarCedo) re.pegouCedo = true;
+                // === PONTUAÇÃO ===
+                let score = candidate.rawScore;
+
+                if (isEqRetro && estRetro === 'quantidade') score = 0;
+
+                // Hierarquia Retro: RETRO pura tem prioridade, mas rede não localizada é BEM-VINDA
+                if (candidate.isRetro && isEqRetro) score += 500000;
+                else if (candidate.isRedeNaoLocalizada && isEqRetro) {
+                    // Bônus alto para rede não localizada na retro — é preferível incluir
+                    score += 80000;
+                }
+                
+                if (re.rota.length === 0 && isEqCedo && candidate.isPegarCedo) score += 100000;
+                if (candidate.isRedeNaoLocalizada && isEqDesempenho) score += 50000;
+
+                if (re.rota.length > 0) {
+                    let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
+                    let bonusCidade = (re.ignorarProximaDistancia || candidate.cidade === re.cidadeBaseEquipe) ? 5000 : 0;
                     
-                    if (re.ignorarProximaDistancia) {
-                        re.ignorarProximaDistancia = false; // Queima o passe livre
-                        re.cidadeBaseEquipe = escolhida.cidade; // Ancorou na nova cidade
-                    } else if (re.rota.length === 0) {
-                        re.cidadeBaseEquipe = escolhida.cidade;
-                    }
+                    let ultimoOS = re.rota[re.rota.length - 1];
+                    let bonusBairro = (candidate.bairro === ultimoOS.bairro) ? 15000 : 0;
+                    let countMesmoBairro = re.rota.filter(o => o.bairro === candidate.bairro).length;
+                    if (countMesmoBairro > 0) bonusBairro += 8000;
                     
-                    re.rota.push(escolhida);
-                } else { break; }
+                    score = score + bonusCidade + bonusBairro - (distKm * 100);
+                } else {
+                    let countBairroUnassigned = unassigned.filter(u => u.bairro === candidate.bairro).length;
+                    if (countBairroUnassigned > 1) score += (countBairroUnassigned * 3000);
+                }
+
+                if (score > bestScore) { bestScore = score; bestIndex = i; }
+            }
+
+            if (bestIndex !== -1) {
+                let escolhida = unassigned.splice(bestIndex, 1)[0];
+                if (escolhida.isPegarCedo) re.pegouCedo = true;
+                
+                if (re.ignorarProximaDistancia) {
+                    re.ignorarProximaDistancia = false;
+                    re.cidadeBaseEquipe = escolhida.cidade;
+                } else if (re.rota.length === 0) {
+                    re.cidadeBaseEquipe = escolhida.cidade;
+                }
+                
+                re.rota.push(escolhida);
+                return true;
+            }
+            return false;
+        }
+
+        // RODADA 1: Garantir mínimo de 3 OS para cada equipe (round-robin)
+        for (let rodada = 0; rodada < MIN_POR_EQUIPE; rodada++) {
+            for (let re of rotasEquipes) {
+                if (re.rota.length <= rodada && unassigned.length > 0) {
+                    alocarUmaOS(re);
+                }
+            }
+        }
+
+        // RODADA 2: Preencher até 6 OS (round-robin)
+        for (let rodada = MIN_POR_EQUIPE; rodada < MAX_POR_EQUIPE; rodada++) {
+            for (let re of rotasEquipes) {
+                if (re.rota.length <= rodada && unassigned.length > 0) {
+                    alocarUmaOS(re);
+                }
+            }
+        }
+
+        // --- FASE 3: REORDENAÇÃO PELO USUÁRIO ---
+        let escolhasReorder = await pedirReordenacao(rotasEquipes);
+        if (escolhasReorder && Object.keys(escolhasReorder).length > 0) {
+            for (let re of rotasEquipes) {
+                if (escolhasReorder[re.equipe.nome] !== undefined) {
+                    let startIdx = escolhasReorder[re.equipe.nome];
+                    re.rota = reordenarRotaPorProximidade(re.rota, startIdx);
+                }
             }
         }
 
@@ -469,25 +910,23 @@
 
         for (let re of rotasEquipes) {
             if(re.rota.length === 0) continue;
-            
             re.rota.forEach((os, idx) => {
-                let m = L.circleMarker([os.lat, os.lng], {color: re.equipe.cor, radius: 6, fillOpacity: 0.8}).addTo(map);
+                let m = L.circleMarker([os.lat, os.lng], {color: re.equipe.cor, radius: 7, fillOpacity: 0.9, weight: 2}).addTo(map);
+                m.bindTooltip(`${idx+1}º - OS ${os.os}`, {permanent: false, direction: 'top'});
                 polylineLayers.push(m); allBounds.push([os.lat, os.lng]);
             });
 
             if(re.rota.length < 2) continue;
-
             let coordsOSRM = re.rota.map(p => `${p.lng},${p.lat}`).join(';');
             let url = `https://router.project-osrm.org/route/v1/driving/${coordsOSRM}?geometries=geojson&overview=full`;
-            
             try {
                 let res = await fetch(url); let data = await res.json();
                 if(data.code === 'Ok' && data.routes.length > 0) {
-                    let poly = L.geoJSON(data.routes[0].geometry, {style: {color: re.equipe.cor, weight: 6, opacity: 0.7}}).addTo(map);
+                    let poly = L.geoJSON(data.routes[0].geometry, {style: {color: re.equipe.cor, weight: 5, opacity: 0.75}}).addTo(map);
                     polylineLayers.push(poly);
                 } else { throw new Error('OSRM Failed'); }
             } catch(e) {
-                let polyFall = L.polyline(re.rota.map(p => [p.lat, p.lng]), {color: re.equipe.cor, weight: 6, dashArray: '10, 10'}).addTo(map);
+                let polyFall = L.polyline(re.rota.map(p => [p.lat, p.lng]), {color: re.equipe.cor, weight: 5, dashArray: '8, 8', opacity: 0.75}).addTo(map);
                 polylineLayers.push(polyFall);
             }
         }
@@ -500,40 +939,55 @@
         if (os.isRetro) badges += '<span class="badge badge-retro">🚜 Retro</span>';
         if (os.isRedeNaoLocalizada) badges += '<span class="badge badge-rede">❌ Ñ Localizada</span>';
         if (os.isApoio) badges += '<span class="badge badge-apoio">🤝 Apoio</span>';
-        if (os.isCloneApoio) badges += '<span class="badge badge-apoio" style="background:#0d47a1">🤝 (Prestando Apoio)</span>';
+        if (os.isCloneApoio) badges += '<span class="badge badge-apoio" style="background:#1e40af">🤝 Prestando Apoio</span>';
         return badges;
     }
 
     function preencherTabela(rotasEquipes, sobrou, pendencias, restritasObs2) {
-        let tbody = document.querySelector("#tabelaRotas tbody"); tbody.innerHTML = "";
+        const COLSPAN = 10;
+        let tbody = document.querySelector("#tabelaRotas tbody");
+        tbody.innerHTML = "";
 
         rotasEquipes.forEach(re => {
             if(re.rota.length > 0) {
-                let atr = re.equipe.atributos.join(' | ');
-                tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:${re.equipe.cor}">🚐 ${re.equipe.nome} <span style="font-weight:normal; font-size: 11px; color:#777;">(${atr})</span></td></tr>`;
+                let atr = re.equipe.atributos.join(' · ');
+                tbody.innerHTML += `<tr class="row-equipe"><td colspan="${COLSPAN}" style="color:${re.equipe.cor}">🚐 ${re.equipe.nome} <span style="font-weight:normal; font-size: 11px; color:var(--text-sub);">(${atr}) — ${re.rota.length} OS</span></td></tr>`;
                 re.rota.forEach((os, index) => {
                     tbody.innerHTML += `<tr>
-                        <td>-</td><td><strong>${index + 1}º</strong></td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td>
-                        <td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td>
-                        <td style="color: #4CAF50;">✔ Roteirizado</td>
+                        <td>—</td>
+                        <td><span class="ordem-num">${index + 1}º</span></td>
+                        <td><strong>${os.os}</strong></td>
+                        <td>${os.cidade}</td>
+                        <td>${os.bairro}</td>
+                        <td>${gerarBadges(os)}</td>
+                        <td>${os.geracao}</td>
+                        <td>${os.vencimento}</td>
+                        <td>${gerarBadgeSituacao(os)}</td>
+                        <td><span class="status-roteirizado">✔ Roteirizado</span></td>
                     </tr>`;
                 });
             }
         });
 
         if(sobrou.length > 0) {
-            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#ff9800">⚠️ Fila de Espera (Excesso, Sem Par de Apoio ou Fora do Raio)</td></tr>`;
-            sobrou.forEach(os => { tbody.innerHTML += `<tr><td>-</td><td>-</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td><td style="color: #ff9800;">Fila</td></tr>`; });
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="${COLSPAN}" style="color:var(--warning)">⚠️ Fila de Espera — ${sobrou.length} OS</td></tr>`;
+            sobrou.forEach(os => {
+                tbody.innerHTML += `<tr><td>—</td><td>—</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td><td>${gerarBadgeSituacao(os)}</td><td><span class="status-fila">Fila</span></td></tr>`;
+            });
         }
         
         if(restritasObs2.length > 0) {
-            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#000">🚫 Bloqueadas por Observação 2</td></tr>`;
-            restritasObs2.forEach(os => { tbody.innerHTML += `<tr style="background:#e0e0e0; color:#555"><td>-</td><td>-</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td><span class="badge badge-bloq">Restrita</span></td><td>${os.geracao}</td><td>${os.vencimento}</td><td style="color:#000;">Bloqueada</td></tr>`; });
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="${COLSPAN}" style="color:var(--text-sub);">🚫 Bloqueadas por Obs 2 — ${restritasObs2.length} OS</td></tr>`;
+            restritasObs2.forEach(os => { 
+                tbody.innerHTML += `<tr class="row-restrita"><td>—</td><td>—</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td><span class="badge badge-bloq">Restrita</span></td><td>${os.geracao}</td><td>${os.vencimento}</td><td>${gerarBadgeSituacao(os)}</td><td><span class="status-bloqueada">Bloqueada</span></td></tr>`; 
+            });
         }
 
         if(pendencias.length > 0) {
-            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#f44336">❌ Bairros Sem Mapeamento</td></tr>`;
-            pendencias.forEach(p => { tbody.innerHTML += `<tr><td>-</td><td>-</td><td>${p.os}</td><td>${p.cidade}</td><td>${p.bairro}</td><td>-</td><td>${p.geracao}</td><td>${p.vencimento}</td><td style="color: #f44336; font-weight: bold;">Sem Mapa</td></tr>`; });
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="${COLSPAN}" style="color:var(--danger)">❌ Sem Mapeamento — ${pendencias.length} OS</td></tr>`;
+            pendencias.forEach(p => {
+                tbody.innerHTML += `<tr><td>—</td><td>—</td><td>${p.os}</td><td>${p.cidade}</td><td>${p.bairro}</td><td>—</td><td>${p.geracao}</td><td>${p.vencimento}</td><td>${gerarBadgeSituacao(p)}</td><td><span class="status-sem-mapa">Sem Mapa</span></td></tr>`;
+            });
         }
     }
 </script>
