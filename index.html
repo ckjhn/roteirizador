@@ -595,6 +595,68 @@
         }
         .dm-data-stat span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
 
+        /* === PRIORITY MODAL === */
+        #modalPrioridade {
+            width: 90vw; max-width: 900px; max-height: 85vh; overflow-y: auto;
+            border-top: 3px solid #f59e0b;
+        }
+        #modalPrioridade h3 { color: #f59e0b; }
+        .prio-desc {
+            font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.7;
+            padding: 10px 14px; background: rgba(245, 158, 11, 0.06);
+            border-left: 3px solid var(--warning); border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+        .prio-search-bar {
+            display: flex; gap: 8px; margin-bottom: 14px; align-items: center;
+        }
+        .prio-search-bar input {
+            flex: 1; margin-bottom: 0;
+        }
+        .prio-search-bar .prio-count {
+            font-size: 12px; color: var(--text-sub); white-space: nowrap;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .prio-list {
+            max-height: 340px; overflow-y: auto; margin-bottom: 14px;
+            border: 1px solid var(--panel-border); border-radius: var(--radius-sm);
+        }
+        .prio-list::-webkit-scrollbar { width: 4px; }
+        .prio-list::-webkit-scrollbar-thumb { background: var(--input-border); border-radius: 10px; }
+        .prio-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-bottom: 1px solid var(--panel-border);
+            font-size: 13px; transition: background 0.1s;
+        }
+        .prio-item:last-child { border-bottom: none; }
+        .prio-item:hover { background: var(--accent-soft); }
+        .prio-item.prio-selected { background: rgba(245,158,11,0.08); }
+        .prio-item-info { flex: 1; min-width: 0; }
+        .prio-item-os { font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .prio-item-local { font-size: 12px; color: var(--text-sub); }
+        .prio-item-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+        .prio-item select {
+            width: 180px; padding: 6px 8px; margin-bottom: 0;
+            font-size: 12px; border-radius: var(--radius-xs);
+        }
+        .prio-item select.prio-assigned {
+            border-color: #f59e0b; background: rgba(245,158,11,0.08);
+            font-weight: 600;
+        }
+        .prio-forced-summary {
+            padding: 10px 14px; background: var(--input-bg);
+            border-radius: var(--radius-sm); margin-bottom: 14px;
+            font-size: 12px; color: var(--text-sub);
+            display: none;
+        }
+        .prio-forced-summary.visible { display: block; }
+        .prio-forced-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(245,158,11,0.15); color: #b45309;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; margin: 2px 4px 2px 0;
+        }
+        body.dark-mode .prio-forced-tag { color: #fbbf24; }
+
         /* Data Management Header Button */
         .header-actions { display: flex; align-items: center; gap: 8px; }
         .btn-header {
@@ -754,6 +816,28 @@
     <div id="aiDetailContent"></div>
     <div style="margin-top: 14px;">
         <button onclick="fecharModais()" class="btn-cancel">Fechar</button>
+    </div>
+</div>
+
+<!-- PRIORITY OS MODAL -->
+<div id="modalPrioridade" class="modal-base">
+    <h3>⚡ Prioridades — Forçar OS para Equipe</h3>
+    <div class="prio-desc">
+        Antes de gerar a rota, escolha se alguma OS precisa ser <strong>obrigatoriamente programada</strong> para uma equipe específica.<br>
+        Essas OS serão alocadas <strong>primeiro</strong>, como ponto de partida da rota daquela equipe.<br>
+        <strong>Exemplo:</strong> A gerência pediu que a OS 12345 vá para a equipe Alfa-01 sem falta.
+    </div>
+    <div class="prio-search-bar">
+        <input type="text" id="prioSearchInput" placeholder="🔍 Filtrar por OS, cidade ou bairro..." oninput="filtrarPrioLista()">
+        <span class="prio-count" id="prioCount">0 OS</span>
+    </div>
+    <div class="prio-forced-summary" id="prioForcedSummary">
+        <strong>📌 Forçadas:</strong> <span id="prioForcedTags"></span>
+    </div>
+    <div class="prio-list" id="prioList"></div>
+    <div style="display: flex; gap: 8px;">
+        <button onclick="confirmarPrioridades()" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⚡ Confirmar e Gerar Rota</button>
+        <button onclick="pularPrioridades()" class="btn-cancel">Pular — Sem Prioridades</button>
     </div>
 </div>
 
@@ -989,6 +1073,122 @@
         return `<span class="${sit.classe}">${sit.label}</span>`;
     }
 
+    // --- MODAL DE PRIORIDADES (FORÇAR OS PARA EQUIPE) ---
+    let resolvePrioridade = null;
+    let prioValidOS = [];
+    let prioForcadas = {}; // { osNum: equipeNome }
+
+    function pedirPrioridades(validOS) {
+        return new Promise(resolve => {
+            prioValidOS = validOS;
+            prioForcadas = {};
+            resolvePrioridade = resolve;
+
+            let list = document.getElementById('prioList');
+            list.innerHTML = '';
+
+            // Sort: mais vencidas primeiro
+            let sorted = [...validOS].sort((a, b) => b.diasVencido - a.diasVencido);
+
+            let eqOptions = '<option value="">— Automático —</option>' +
+                equipes.map(eq => `<option value="${eq.nome}">${eq.nome}</option>`).join('');
+
+            sorted.forEach((os, idx) => {
+                let sit = getSituacaoVencimento(os.diasVencido);
+                let badges = '';
+                if (os.isPegarCedo) badges += '<span class="badge badge-cedo" style="font-size:9px;">☀️ Cedo</span>';
+                if (os.isRetro) badges += '<span class="badge badge-retro" style="font-size:9px;">🚜 Retro</span>';
+                if (os.isRedeNaoLocalizada) badges += '<span class="badge badge-rede" style="font-size:9px;">❌ Ñ Loc</span>';
+                if (os.isApoio) badges += '<span class="badge badge-apoio" style="font-size:9px;">🤝 Apoio</span>';
+
+                let item = document.createElement('div');
+                item.className = 'prio-item';
+                item.dataset.os = String(os.os).toLowerCase();
+                item.dataset.cidade = os.cidade.toLowerCase();
+                item.dataset.bairro = os.bairro.toLowerCase();
+                item.dataset.osNum = os.os;
+
+                item.innerHTML = `
+                    <div class="prio-item-info">
+                        <div>
+                            <span class="prio-item-os">OS ${os.os}</span>
+                            <span class="${sit.classe}" style="font-size:10px;padding:2px 6px;">${sit.label}</span>
+                        </div>
+                        <div class="prio-item-local">${os.cidade} / ${os.bairro}</div>
+                        <div class="prio-item-badges">${badges}</div>
+                    </div>
+                    <select class="prio-select" data-os="${os.os}" onchange="onPrioSelectChange(this)">
+                        ${eqOptions}
+                    </select>
+                `;
+                list.appendChild(item);
+            });
+
+            document.getElementById('prioCount').textContent = `${sorted.length} OS`;
+            atualizarPrioSummary();
+
+            document.getElementById('modalPrioridade').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        });
+    }
+
+    function onPrioSelectChange(selectEl) {
+        let osNum = selectEl.dataset.os;
+        let eqNome = selectEl.value;
+        let item = selectEl.closest('.prio-item');
+
+        if (eqNome) {
+            prioForcadas[osNum] = eqNome;
+            selectEl.classList.add('prio-assigned');
+            item.classList.add('prio-selected');
+        } else {
+            delete prioForcadas[osNum];
+            selectEl.classList.remove('prio-assigned');
+            item.classList.remove('prio-selected');
+        }
+        atualizarPrioSummary();
+    }
+
+    function atualizarPrioSummary() {
+        let summary = document.getElementById('prioForcedSummary');
+        let tags = document.getElementById('prioForcedTags');
+        let entries = Object.entries(prioForcadas);
+
+        if (entries.length === 0) {
+            summary.classList.remove('visible');
+            return;
+        }
+        summary.classList.add('visible');
+        tags.innerHTML = entries.map(([os, eq]) =>
+            `<span class="prio-forced-tag">OS ${os} → ${eq}</span>`
+        ).join('');
+    }
+
+    function filtrarPrioLista() {
+        let query = document.getElementById('prioSearchInput').value.toLowerCase().trim();
+        let items = document.querySelectorAll('#prioList .prio-item');
+        let count = 0;
+        items.forEach(item => {
+            let match = !query ||
+                item.dataset.os.includes(query) ||
+                item.dataset.cidade.includes(query) ||
+                item.dataset.bairro.includes(query);
+            item.style.display = match ? 'flex' : 'none';
+            if (match) count++;
+        });
+        document.getElementById('prioCount').textContent = `${count} OS`;
+    }
+
+    function confirmarPrioridades() {
+        fecharModais();
+        if (resolvePrioridade) resolvePrioridade({...prioForcadas});
+    }
+
+    function pularPrioridades() {
+        fecharModais();
+        if (resolvePrioridade) resolvePrioridade(null);
+    }
+
     // --- MODAIS DE APOIO ---
     let resolveApoioPre = null;
     function pedirApoioUsuario(os, equipesDisponiveis) {
@@ -1141,6 +1341,22 @@
 
         let unassigned = [...validOS];
         let rotasEquipes = equipes.map(e => ({ equipe: e, rota: [], pegouCedo: false, ignorarProximaDistancia: false }));
+
+        // --- FASE 0: PRIORIDADES FORÇADAS (escolha do programador) ---
+        let forcadas = await pedirPrioridades(validOS);
+        if (forcadas && Object.keys(forcadas).length > 0) {
+            for (let [osNum, eqNome] of Object.entries(forcadas)) {
+                let osIdx = unassigned.findIndex(u => String(u.os) === String(osNum));
+                let re = rotasEquipes.find(r => r.equipe.nome === eqNome);
+                if (osIdx > -1 && re) {
+                    let osForced = unassigned.splice(osIdx, 1)[0];
+                    osForced._forcada = true;
+                    if (osForced.isPegarCedo) re.pegouCedo = true;
+                    re.cidadeBaseEquipe = osForced.cidade;
+                    re.rota.push(osForced);
+                }
+            }
+        }
 
         // --- FASE 1: PRÉ-ALOCAÇÃO DE APOIO ---
         let apoiosUrgentes = unassigned.filter(os => os.isApoio && os.diasVencido >= -1);
@@ -1335,6 +1551,7 @@
 
     function gerarBadges(os) {
         let badges = '';
+        if (os._forcada) badges += '<span class="badge" style="background:linear-gradient(135deg,#f59e0b,#f97316);">📌 Prioridade</span>';
         if (os.isPegarCedo) badges += '<span class="badge badge-cedo">☀️ Cedo</span>';
         if (os.isRetro) badges += '<span class="badge badge-retro">🚜 Retro</span>';
         if (os.isRedeNaoLocalizada) badges += '<span class="badge badge-rede">❌ Ñ Localizada</span>';
