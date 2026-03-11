@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roteirizador PRO MAX - Regras de Observação</title>
+    <title>Roteirizador PRO MAX - Inteligência e Comboio</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -15,7 +15,7 @@
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-color); transition: 0.3s; }
         .container { max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative; }
-        h1, h2, h3 { color: var(--text-color); }
+        h1, h2, h3 { color: var(--text-color); margin-top: 0; }
         
         #themeToggle { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
         
@@ -24,28 +24,26 @@
         .bloco-header { background: var(--header-bg); color: white; padding: 10px; margin: -15px -15px 15px -15px; border-radius: 8px 8px 0 0; font-weight: bold; }
         .bloco-header.config { background: var(--header-bg-2); }
         
-        input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
+        input[type="text"], input[type="number"], input[type="file"], select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
         button { padding: 10px 15px; background: var(--btn-bg); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
         button:hover { background: var(--btn-hover); }
         button.secundario { background: #00897b; margin-top: 5px; }
         button.secundario:hover { background: #00695c; }
-        button.remover { background: #d32f2f; padding: 5px 10px; width: auto; font-size: 12px; }
+        button.acao-pequena { padding: 4px 8px; width: auto; font-size: 11px; margin-left: 5px; background: #555; }
+        button.remover { background: #d32f2f; }
+        button.editar { background: #f57c00; }
         
         .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; padding: 10px; background: rgba(128, 128, 128, 0.1); border-radius: 5px; }
         .checkbox-group label { display: flex; align-items: center; font-size: 13px; cursor: pointer; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);}
         .checkbox-group input { width: auto; margin-right: 5px; margin-bottom: 0; }
-
-        .config-area label { display: flex; align-items: center; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
-        .config-area input[type="checkbox"] { width: auto; margin-right: 10px; transform: scale(1.2); }
 
         #listaEquipes { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; max-height: 150px; }
         #listaEquipes li { background: var(--table-row-alt); padding: 8px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-left: 4px solid var(--btn-bg); }
         
         #map { height: 500px; width: 100%; border-radius: 8px; border: 2px solid var(--border-color); z-index: 1; }
         
-        #modal, #modalOverlay { display: none; position: fixed; }
-        #modal { top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel-bg); color: var(--text-color); padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; width: 300px; border: 1px solid var(--border-color); }
-        #modalOverlay { top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .modal-base { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel-bg); color: var(--text-color); padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; width: 340px; border: 1px solid var(--border-color); }
+        #modalOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
         .table-responsive { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -53,11 +51,12 @@
         th { background-color: var(--table-header); color: white; }
         .row-equipe td { background-color: var(--table-row-alt); font-weight: bold; border-top: 2px solid var(--btn-bg); }
         
-        /* Badges de Regras Especiais */
         .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; color: white; font-weight: bold; margin-left: 5px; display: inline-block;}
         .badge-cedo { background: #ff9800; }
         .badge-retro { background: #795548; }
         .badge-rede { background: #f44336; }
+        .badge-apoio { background: #2196F3; }
+        .badge-bloq { background: #000; }
         
         @media (max-width: 900px) { .painel-grid { grid-template-columns: 1fr; } }
     </style>
@@ -66,7 +65,7 @@
 
 <div class="container">
     <button id="themeToggle" onclick="toggleTheme()" title="Alternar Tema">🌙</button>
-    <h1>🚀 Roteirizador PRO MAX</h1>
+    <h1>🚀 Roteirizador PRO MAX (Comboio e Retro)</h1>
     
     <div class="painel-grid">
         <div class="bloco">
@@ -76,42 +75,47 @@
                 <label><input type="checkbox" value="Pegar cedo"> Pegar cedo</label>
                 <label><input type="checkbox" value="Retro"> Retro</label>
                 <label><input type="checkbox" value="Desempenho"> Desempenho</label>
-                <label><input type="checkbox" value="Dando apoio"> Apoio (Dar)</label>
-                <label><input type="checkbox" value="Recebendo apoio"> Apoio (Receber)</label>
             </div>
-            <button onclick="adicionarEquipe()">+ Adicionar</button>
+            <div style="display: flex; gap: 5px;">
+                <button id="btnSalvarEquipe" onclick="salvarEquipe()">+ Adicionar</button>
+                <button id="btnCancelarEdicao" onclick="cancelarEdicaoEquipe()" style="display:none; background:#999;">Cancelar</button>
+            </div>
             <ul id="listaEquipes" style="margin-top: 15px;"></ul>
         </div>
 
         <div class="bloco config-area">
             <div class="bloco-header config">⚙️ 2. Regras de Negócio</div>
             
+            <label style="margin-top: 5px;">Estratégia Exclusiva Retro:</label>
+            <select id="configEstrategiaRetro">
+                <option value="vencidas">Focar em Vencidas (Antigas)</option>
+                <option value="quantidade">Focar em Desempenho (Quantidade/Proximidade)</option>
+            </select>
+
             <label style="margin-top: 10px;">Raio Máx. entre OS (Km):</label>
             <input type="number" id="configMaxDist" value="20" min="1" max="100">
             
-            <div style="margin-top: 15px; padding: 10px; background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; border-radius: 4px;">
-                <label style="cursor: pointer; margin-bottom: 0;">
-                    <input type="checkbox" id="configTravarCidade" checked>
-                    Forçar equipe na mesma Cidade
+            <div style="margin-top: 10px; padding: 10px; background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; border-radius: 4px;">
+                <label style="cursor: pointer; margin-bottom: 0; display:flex; align-items:center;">
+                    <input type="checkbox" id="configTravarCidade" checked> Forçar equipe na mesma Cidade
                 </label>
             </div>
         </div>
 
         <div class="bloco">
-            <div class="bloco-header">📂 3. Roteirização e Mapa</div>
+            <div class="bloco-header">📂 3. Roteirização e Backup</div>
             <label>Carregar Planilha (.xlsx):</label>
             <input type="file" id="excelFile" accept=".xlsx, .xls">
             <button onclick="processarExcel()" style="margin-bottom: 15px; background: #00c853;">🗺️ Gerar Rota Inteligente</button>
             
             <div style="display: flex; gap: 10px; margin-top: auto;">
-                <button class="secundario" onclick="exportarJSON()">💾 Exp. Mapa</button>
-                <input type="file" id="importJson" accept=".json" style="display:none" onchange="importarJSON(event)">
-                <button class="secundario" onclick="document.getElementById('importJson').click()">📁 Imp. Mapa</button>
+                <button class="secundario" onclick="exportarBackup()">💾 Backup Geral</button>
+                <input type="file" id="importJson" accept=".json" style="display:none" onchange="importarBackup(event)">
+                <button class="secundario" onclick="document.getElementById('importJson').click()">📁 Restaurar</button>
             </div>
         </div>
     </div>
 
-    <div id="alertArea" style="margin-bottom: 15px;"></div>
     <div id="map"></div>
 
     <div class="table-responsive">
@@ -136,297 +140,400 @@
 </div>
 
 <div id="modalOverlay"></div>
-<div id="modal">
-    <h3>Mapear Novo Bairro</h3>
+
+<div id="modalMapa" class="modal-base">
+    <h3>📍 Mapear Novo Bairro</h3>
     <input type="text" id="inputCidade" placeholder="CIDADE">
     <input type="text" id="inputBairro" placeholder="BAIRRO">
     <div style="display: flex; justify-content: space-between; gap: 10px;">
         <button onclick="salvarBairro()">Salvar Local</button>
-        <button onclick="fecharModal()" style="background: #999;">Cancelar</button>
+        <button onclick="fecharModais()" style="background: #999;">Cancelar</button>
+    </div>
+</div>
+
+<div id="modalApoioPre" class="modal-base" style="border: 2px solid #2196F3;">
+    <h3 style="color: #2196F3; margin-top:0;">🤝 Alocação de Comboio</h3>
+    <p id="textoModalApoioPre" style="font-size: 13px;"></p>
+    
+    <label style="font-weight: bold; font-size: 12px;">Equipe Principal (Dona da OS):</label>
+    <select id="selectEqPrimaria"></select>
+    
+    <label style="font-weight: bold; font-size: 12px; margin-top:10px;">Equipe de Apoio:</label>
+    <select id="selectEqApoio"></select>
+    
+    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 15px;">
+        <button onclick="confirmarApoioPre()" style="background: #2196F3;">Confirmar Comboio</button>
+        <button onclick="pularApoioPre()" style="background: #999;">Pular e deixar na Fila</button>
     </div>
 </div>
 
 <script>
+    // --- ESTADOS E INICIALIZAÇÃO ---
+    let appData = JSON.parse(localStorage.getItem('appRoteirizadorData')) || { dbBairros: {}, equipes: [] };
+    let dbBairros = appData.dbBairros;
+    let equipes = appData.equipes;
+    let editIndex = -1;
+
+    if(localStorage.getItem('dbBairros') && Object.keys(dbBairros).length === 0) {
+        dbBairros = JSON.parse(localStorage.getItem('dbBairros')); salvarEstadoGeral();
+    }
+
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
-        localStorage.setItem('temaEscuro', isDark);
+        localStorage.setItem('temaEscuro', document.body.classList.contains('dark-mode'));
+        document.getElementById('themeToggle').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
     }
     if (localStorage.getItem('temaEscuro') === 'true') toggleTheme();
 
-    let equipes = [];
-    const coresRotas = ['#E53935', '#1E88E5', '#43A047', '#8E24AA', '#F4511E', '#00ACC1', '#3949AB'];
-    let polylineLayers = [];
+    function salvarEstadoGeral() { localStorage.setItem('appRoteirizadorData', JSON.stringify({ dbBairros, equipes })); }
 
-    function adicionarEquipe() {
+    // --- GERENCIAMENTO DE EQUIPES ---
+    const coresRotas = ['#E53935', '#1E88E5', '#43A047', '#8E24AA', '#F4511E', '#00ACC1', '#3949AB'];
+    
+    function salvarEquipe() {
         let nome = document.getElementById('nomeEquipe').value.trim();
         if (!nome) { alert("Digite o nome da equipe."); return; }
-        
         let checkboxes = document.querySelectorAll('#atributosEquipe input[type="checkbox"]:checked');
-        let atributosSelecionados = Array.from(checkboxes).map(cb => cb.value);
-        let atributoTxt = atributosSelecionados.length > 0 ? atributosSelecionados.join(' | ') : 'Padrão';
-        
-        // Extrai o número da equipe (ex: Alfa - 01 -> "01")
-        let numEquipeMatch = nome.match(/-\s*(\d+)/);
-        let idNumero = numEquipeMatch ? numEquipeMatch[1].trim() : null;
+        let atributos = Array.from(checkboxes).map(cb => cb.value);
+        let idNumero = (nome.match(/-\s*(\d+)/) || [])[1] || null;
+        let cor = editIndex > -1 ? equipes[editIndex].cor : coresRotas[equipes.length % coresRotas.length];
 
-        let cor = coresRotas[equipes.length % coresRotas.length];
-        equipes.push({ nome, atributo: atributoTxt, cor, idNumero });
-        
-        document.getElementById('nomeEquipe').value = '';
-        checkboxes.forEach(cb => cb.checked = false);
-        atualizarListaEquipes();
+        let novaEquipe = { nome, atributos, cor, idNumero };
+        if (editIndex > -1) equipes[editIndex] = novaEquipe; else equipes.push(novaEquipe);
+        salvarEstadoGeral(); cancelarEdicaoEquipe(); atualizarListaEquipes();
     }
 
-    function removerEquipe(index) { equipes.splice(index, 1); atualizarListaEquipes(); }
+    function editarEquipe(index) {
+        editIndex = index; let eq = equipes[index];
+        document.getElementById('nomeEquipe').value = eq.nome;
+        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => { cb.checked = eq.atributos.includes(cb.value); });
+        document.getElementById('btnSalvarEquipe').innerText = "Salvar Edição"; document.getElementById('btnCancelarEdicao').style.display = "block";
+    }
+
+    function cancelarEdicaoEquipe() {
+        editIndex = -1; document.getElementById('nomeEquipe').value = '';
+        document.querySelectorAll('#atributosEquipe input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('btnSalvarEquipe').innerText = "+ Adicionar"; document.getElementById('btnCancelarEdicao').style.display = "none";
+    }
+
+    function removerEquipe(index) { equipes.splice(index, 1); salvarEstadoGeral(); atualizarListaEquipes(); }
 
     function atualizarListaEquipes() {
-        let ul = document.getElementById('listaEquipes');
-        ul.innerHTML = '';
+        let ul = document.getElementById('listaEquipes'); ul.innerHTML = '';
         equipes.forEach((eq, index) => {
+            let atrTxt = eq.atributos.length > 0 ? eq.atributos.join(' | ') : 'Padrão';
             ul.innerHTML += `<li>
-                <span><span style="color:${eq.cor}; font-size:16px;">■</span> <strong>${eq.nome}</strong> <span style="font-size:11px; color:#888;">(${eq.atributo})</span></span>
-                <button class="remover" onclick="removerEquipe(${index})">X</button>
+                <span><span style="color:${eq.cor}; font-size:16px;">■</span> <strong>${eq.nome}</strong> <br><span style="font-size:11px; color:#888;">(${atrTxt})</span></span>
+                <div><button class="acao-pequena editar" onclick="editarEquipe(${index})">✎</button><button class="acao-pequena remover" onclick="removerEquipe(${index})">X</button></div>
             </li>`;
         });
     }
+    atualizarListaEquipes();
 
-    let dbBairros = JSON.parse(localStorage.getItem('dbBairros')) || {};
-    function exportarJSON() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbBairros, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "backup_mapa.json"); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); }
-    function importarJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { dbBairros = { ...dbBairros, ...JSON.parse(e.target.result) }; localStorage.setItem('dbBairros', JSON.stringify(dbBairros)); alert("Mapa atualizado!"); location.reload(); }; reader.readAsText(file); }
+    function exportarBackup() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({dbBairros, equipes}, null, 2));
+        const a = document.createElement('a'); a.href = dataStr; a.download = "backup_roteirizador_completo.json";
+        document.body.appendChild(a); a.click(); a.remove();
+    }
+    
+    function importarBackup(event) {
+        const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let dados = JSON.parse(e.target.result);
+                if(dados.Campinas || dados.Buzios) dbBairros = {...dbBairros, ...dados}; 
+                else { dbBairros = { ...dbBairros, ...(dados.dbBairros || {}) }; if(dados.equipes) equipes = dados.equipes; }
+                salvarEstadoGeral(); alert("Backup Restaurado!"); location.reload();
+            } catch(err) { alert("Erro ao ler backup!"); }
+        };
+        reader.readAsText(file);
+    }
 
-    let tempLat = null, tempLng = null;
+    // --- MAPA ---
+    let tempLat = null, tempLng = null, polylineLayers = [];
     const map = L.map('map').setView([-22.85, -42.05], 10); 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     for (const cid in dbBairros) { for (const bai in dbBairros[cid]) { L.marker([dbBairros[cid][bai].lat, dbBairros[cid][bai].lng]).addTo(map).bindPopup(`${bai} (${cid})`); } }
 
-    map.on('click', function(e) { tempLat = e.latlng.lat; tempLng = e.latlng.lng; document.getElementById('modal').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; });
-    function fecharModal() { document.getElementById('modal').style.display = 'none'; document.getElementById('modalOverlay').style.display = 'none'; }
-    function salvarBairro() { let c = document.getElementById('inputCidade').value.trim().toUpperCase(); let b = document.getElementById('inputBairro').value.trim().toUpperCase(); if(!c || !b) return; if (!dbBairros[c]) dbBairros[c] = {}; dbBairros[c][b] = { lat: tempLat, lng: tempLng }; localStorage.setItem('dbBairros', JSON.stringify(dbBairros)); L.marker([tempLat, tempLng]).addTo(map).bindPopup(`${b} (${c})`); fecharModal(); }
+    map.on('click', function(e) { tempLat = e.latlng.lat; tempLng = e.latlng.lng; document.getElementById('modalMapa').style.display = 'block'; document.getElementById('modalOverlay').style.display = 'block'; });
+    function fecharModais() { document.querySelectorAll('.modal-base').forEach(m => m.style.display = 'none'); document.getElementById('modalOverlay').style.display = 'none'; }
+    function salvarBairro() {
+        let c = document.getElementById('inputCidade').value.trim().toUpperCase(); let b = document.getElementById('inputBairro').value.trim().toUpperCase();
+        if(!c || !b) return; if (!dbBairros[c]) dbBairros[c] = {}; dbBairros[c][b] = { lat: tempLat, lng: tempLng };
+        salvarEstadoGeral(); L.marker([tempLat, tempLng]).addTo(map).bindPopup(`${b} (${c})`); fecharModais();
+    }
 
-    function processarExcel() {
-        if (equipes.length === 0) { alert("Adicione pelo menos uma equipe primeiro!"); return; }
-        const fileInput = document.getElementById('excelFile');
-        if (!fileInput.files[0]) { alert("Selecione um arquivo Excel"); return; }
+    // --- PROCESSAMENTO (Excel -> Apoio -> Algoritmo) ---
+    async function processarExcel() {
+        if (equipes.length === 0) { alert("Adicione pelo menos uma equipe!"); return; }
+        const fileInput = document.getElementById('excelFile'); if (!fileInput.files[0]) { alert("Selecione um arquivo Excel"); return; }
+        
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, {type: 'array', cellDates: true});
             const ordens = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            cruzarDadosEAplicarAlgoritmo(ordens);
+            await cruzarDadosEAplicarAlgoritmo(ordens);
         };
         reader.readAsArrayBuffer(fileInput.files[0]);
     }
 
     function parseDateCustom(val) {
-        if (!val) return new Date();
-        if (val instanceof Date) return val;
+        if (!val) return new Date(); if (val instanceof Date) return val;
         if (typeof val === 'number') return new Date(Math.round((val - 25569)*86400*1000));
-        let parts = String(val).split('/');
-        if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+        let parts = String(val).split('/'); if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
         return new Date(val);
     }
 
-    function cruzarDadosEAplicarAlgoritmo(ordens) {
-        let validOS = []; let pendencias = []; let today = new Date(); 
+    // Promessa para pausar o código e esperar o clique do usuário no Apoio
+    let resolveApoioPre = null;
+    function pedirApoioUsuario(os, equipesDisponiveis) {
+        return new Promise(resolve => {
+            document.getElementById('textoModalApoioPre').innerHTML = `A OS <strong>${os.os}</strong> (${os.cidade} - ${os.bairro}) exige APOIO.<br>Escolha as equipes "Pegar Cedo" para o serviço:`;
+            
+            let options = equipesDisponiveis.map(e => `<option value="${e.nome}">${e.nome}</option>`).join('');
+            document.getElementById('selectEqPrimaria').innerHTML = options;
+            document.getElementById('selectEqApoio').innerHTML = options;
+            
+            // Pré-selecionar a 2ª opção para o apoio, se existir, pra facilitar
+            if(equipesDisponiveis.length > 1) document.getElementById('selectEqApoio').selectedIndex = 1;
+            
+            document.getElementById('modalApoioPre').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+            resolveApoioPre = resolve;
+        });
+    }
+
+    function confirmarApoioPre() {
+        let eq1 = document.getElementById('selectEqPrimaria').value;
+        let eq2 = document.getElementById('selectEqApoio').value;
+        if (eq1 === eq2) { alert("A equipe principal e a equipe de apoio não podem ser a mesma!"); return; }
+        fecharModais(); if(resolveApoioPre) resolveApoioPre({eqPrimariaNome: eq1, eqApoioNome: eq2});
+    }
+
+    function pularApoioPre() {
+        fecharModais(); if(resolveApoioPre) resolveApoioPre(null); // Retorna null para pular e deixar na fila
+    }
+
+    async function cruzarDadosEAplicarAlgoritmo(ordens) {
+        let validOS = []; let pendencias = []; let restritasObs2 = []; let today = new Date(); 
 
         ordens.forEach(os => {
-            let numOS = os['OS'] || '-';
-            let cidade = (os['Cidade'] || '').trim().toUpperCase();
-            let bairro = (os['Bairro'] || '').trim().toUpperCase();
-            let dGeracao = parseDateCustom(os['Data de Geração'] || os['Data de Geracao']);
-            let dVenc = parseDateCustom(os['Data de Vencimento']);
+            let numOS = os['OS'] || '-'; let cidade = (os['Cidade'] || '').trim().toUpperCase(); let bairro = (os['Bairro'] || '').trim().toUpperCase();
+            let dGeracao = parseDateCustom(os['Data de Geração'] || os['Data de Geracao']); let dVenc = parseDateCustom(os['Data de Vencimento']);
             
-            // Leitura avançada das Observações
             let obs1 = (os['Observação 1'] || os['Observacao 1'] || '').toString().toUpperCase();
-            let obs2 = (os['Observação 2'] || os['Observacao 2'] || '').toString().toUpperCase();
+            let obs2 = (os['Observação 2'] || os['Observacao 2'] || '').toString().trim();
             let fullObs = obs1 + " " + obs2;
 
-            let isPegarCedo = fullObs.includes('PEGAR CEDO');
-            let isRetro = fullObs.includes('RETRO');
-            
-            // Regex para extrair números dentro de colchetes ex: REDE NÃO LOCALIZADA [01, 02]
-            let redeMatch = fullObs.match(/REDE N.O LOCALIZADA\s*\[(.*?)\]/);
-            let isRedeNaoLocalizada = !!redeMatch;
+            let isPegarCedo = fullObs.includes('PEGAR CEDO'); let isRetro = fullObs.includes('RETRO'); let isApoio = obs1.includes('APOIO');
+            let redeMatch = fullObs.match(/REDE N.O LOCALIZADA\s*\[(.*?)\]/); let isRedeNaoLocalizada = !!redeMatch;
             let canceladasPor = redeMatch ? redeMatch[1].split(',').map(s => s.trim()) : [];
             
-            // Score Base (Urgência)
             let diasGeracao = Math.floor((today - dGeracao) / (1000 * 60 * 60 * 24));
             let diasVencido = Math.floor((today - dVenc) / (1000 * 60 * 60 * 24));
-            let score = 0;
-            if (diasGeracao > 0) score += (diasGeracao * 2); 
-            if (diasVencido > 0) score += (diasVencido * 15); 
-            else score += (diasVencido * 5); 
+            
+            let score = 0; if (diasGeracao > 0) score += (diasGeracao * 2); 
+            if (diasVencido > 0) score += (diasVencido * 15); else score += (diasVencido * 5); 
 
-            let osData = { 
-                os: numOS, cidade, bairro, geracao: dGeracao.toLocaleDateString(), vencimento: dVenc.toLocaleDateString(), 
-                rawScore: score, isPegarCedo, isRetro, isRedeNaoLocalizada, canceladasPor 
-            };
+            let osData = { os: numOS, cidade, bairro, geracao: dGeracao.toLocaleDateString(), vencimento: dVenc.toLocaleDateString(), rawScore: score, diasVencido, isPegarCedo, isRetro, isRedeNaoLocalizada, isApoio, canceladasPor };
+
+            if (obs2.length > 0) { restritasObs2.push(osData); return; }
 
             if (dbBairros[cidade] && dbBairros[cidade][bairro]) {
-                osData.lat = dbBairros[cidade][bairro].lat;
-                osData.lng = dbBairros[cidade][bairro].lng;
+                osData.lat = dbBairros[cidade][bairro].lat; osData.lng = dbBairros[cidade][bairro].lng;
                 validOS.push(osData);
             } else { pendencias.push(osData); }
         });
 
-        // --- MOTOR DE DECISÃO COM REGRAS ESTRITAS ---
         const maxDist = parseFloat(document.getElementById('configMaxDist').value) || 20;
         const travarCidade = document.getElementById('configTravarCidade').checked;
+        const estRetro = document.getElementById('configEstrategiaRetro').value;
 
         let unassigned = [...validOS];
-        // Ordena tudo pela urgência primária
-        unassigned.sort((a, b) => b.rawScore - a.rawScore);
+        let rotasEquipes = equipes.map(e => ({ equipe: e, rota: [], pegouCedo: false, ignorarProximaDistancia: false }));
 
-        let rotasEquipes = [];
+        // --- FASE 1: PRÉ-ALOCAÇÃO DE APOIO ---
+        let apoiosUrgentes = unassigned.filter(os => os.isApoio && os.diasVencido >= -1);
+        
+        for (let osApoio of apoiosUrgentes) {
+            let equipesCedoLivres = rotasEquipes.filter(re => re.equipe.atributos.includes('Pegar cedo') && !re.pegouCedo);
+            if (equipesCedoLivres.length >= 2) {
+                let escolhas = await pedirApoioUsuario(osApoio, equipesCedoLivres.map(r => r.equipe));
+                
+                if (escolhas) {
+                    let rePri = rotasEquipes.find(r => r.equipe.nome === escolhas.eqPrimariaNome);
+                    let reApoio = rotasEquipes.find(r => r.equipe.nome === escolhas.eqApoioNome);
+                    
+                    // Aloca para a Primária
+                    rePri.rota.push(osApoio);
+                    rePri.pegouCedo = true;
+                    rePri.cidadeBaseEquipe = osApoio.cidade; // Trava a primária nesta cidade
+                    
+                    // Aloca o Clone para a Apoio
+                    let osClone = JSON.parse(JSON.stringify(osApoio)); osClone.isCloneApoio = true;
+                    reApoio.rota.push(osClone);
+                    reApoio.pegouCedo = true;
+                    reApoio.ignorarProximaDistancia = true; // Permite a equipe de apoio pular para outra cidade na próxima OS
 
-        equipes.forEach(equipe => {
-            let rota = [];
-            let isEqRetro = equipe.atributo.includes('Retro');
-            let isEqCedo = equipe.atributo.includes('Pegar cedo');
-            let isEqDesempenho = equipe.atributo.includes('Desempenho');
-            let temPegarCedoNaRota = false;
-            let cidadeBaseEquipe = null;
+                    // Remove da lista geral
+                    let idx = unassigned.findIndex(u => u.os === osApoio.os);
+                    if(idx > -1) unassigned.splice(idx, 1);
+                }
+            }
+        }
 
-            while (rota.length < 6 && unassigned.length > 0) {
-                let bestScore = -Infinity;
-                let bestIndex = -1;
+        // Ordenação base para o loop principal
+        unassigned.sort((a, b) => b.rawScore - a.rawScore); 
+
+        // --- FASE 2: ROTEAMENTO PRINCIPAL ---
+        for (let re of rotasEquipes) {
+            let isEqRetro = re.equipe.atributos.includes('Retro');
+            let isEqCedo = re.equipe.atributos.includes('Pegar cedo');
+            let isEqDesempenho = re.equipe.atributos.includes('Desempenho');
+            
+            if (re.rota.length > 0 && !re.cidadeBaseEquipe) re.cidadeBaseEquipe = re.rota[0].cidade;
+
+            while (re.rota.length < 6 && unassigned.length > 0) {
+                let bestScore = -Infinity; let bestIndex = -1;
 
                 for (let i = 0; i < unassigned.length; i++) {
                     let candidate = unassigned[i];
                     
-                    // ==========================================
-                    // 1. REGRAS DE BLOQUEIO ABSOLUTO (Filtros Estritos)
-                    // ==========================================
-                    
-                    // A) Regra Retro: Equipe Retro SÓ faz Retro ou Rede Não Localizada. Equipe normal NÃO faz Retro.
+                    // Bloqueios Estritos
                     if (isEqRetro && !candidate.isRetro && !candidate.isRedeNaoLocalizada) continue;
                     if (!isEqRetro && candidate.isRetro) continue;
-                    
-                    // B) Regra Rede Cancelada: Se a equipe cancelou, ela NÃO pode pegar de novo.
-                    if (candidate.isRedeNaoLocalizada && equipe.idNumero && candidate.canceladasPor.includes(equipe.idNumero)) continue;
-                    
-                    // C) Regra Pegar Cedo: Só equipe Pegar Cedo faz, e máximo de 1 por rota.
-                    if (candidate.isPegarCedo && !isEqCedo) continue;
-                    if (candidate.isPegarCedo && temPegarCedoNaRota) continue;
+                    if (candidate.isRedeNaoLocalizada && re.equipe.idNumero && candidate.canceladasPor.includes(re.equipe.idNumero)) continue;
+                    if (candidate.isPegarCedo && (!isEqCedo || re.pegouCedo)) continue;
+                    if (candidate.isApoio) continue; // OS de Apoio ignoradas aqui (ou foram tratadas na Fase 1, ou ficaram pra fila)
 
-                    // D) Regra Geográfica (A partir da 2ª OS)
-                    if (rota.length > 0) {
-                        if (travarCidade && candidate.cidade !== cidadeBaseEquipe) continue;
-                        let distKm = calcularDistancia(rota[rota.length-1].lat, rota[rota.length-1].lng, candidate.lat, candidate.lng);
+                    // Verificação Geográfica (A equipe de apoio pode ignorar essa regra 1 vez)
+                    if (re.rota.length > 0 && !re.ignorarProximaDistancia) {
+                        if (travarCidade && candidate.cidade !== re.cidadeBaseEquipe) continue;
+                        let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
                         if (distKm > maxDist) continue;
                     }
 
-                    // ==========================================
-                    // 2. SISTEMA DE PONTUAÇÃO (Pesos Gravitacionais)
-                    // ==========================================
+                    // PONTUAÇÃO E HIERARQUIA
                     let score = candidate.rawScore;
 
-                    // Se for a 1ª OS do dia, e a equipe é "Pegar Cedo", FORÇA a OS de pegar cedo lá pro topo.
-                    if (rota.length === 0 && isEqCedo && candidate.isPegarCedo) {
-                        score += 100000;
-                    }
-                    
-                    // Se for Rede Não Localizada, Desempenho e Retro tem preferência absurda
-                    if (candidate.isRedeNaoLocalizada) {
-                        if (isEqDesempenho) score += 50000;
-                        if (isEqRetro) score += 40000;
-                    }
+                    if (isEqRetro && estRetro === 'quantidade') score = 0; // Zera a idade, foca na proximidade
 
-                    // Ajuste de distância (A partir da 2ª OS)
-                    if (rota.length > 0) {
-                        let distKm = calcularDistancia(rota[rota.length-1].lat, rota[rota.length-1].lng, candidate.lat, candidate.lng);
-                        let bonusCidade = (candidate.cidade === cidadeBaseEquipe) ? 5000 : 0;
+                    // Hierarquia Suprema da Retro (RETRO > REDE NÃO LOCALIZADA)
+                    if (candidate.isRetro && isEqRetro) score += 80000;
+                    else if (candidate.isRedeNaoLocalizada && isEqRetro) score += 40000;
+                    
+                    if (re.rota.length === 0 && isEqCedo && candidate.isPegarCedo) score += 100000;
+                    if (candidate.isRedeNaoLocalizada && isEqDesempenho) score += 50000;
+
+                    if (re.rota.length > 0) {
+                        let distKm = haversine(re.rota[re.rota.length-1].lat, re.rota[re.rota.length-1].lng, candidate.lat, candidate.lng);
+                        // Se for o pulo do Apoio para a nova cidade base, o bônus de cidade é ignorado para permitir liberdade
+                        let bonusCidade = (re.ignorarProximaDistancia || candidate.cidade === re.cidadeBaseEquipe) ? 5000 : 0;
                         score = score + bonusCidade - (distKm * 100);
                     }
 
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestIndex = i;
-                    }
+                    if (score > bestScore) { bestScore = score; bestIndex = i; }
                 }
 
                 if (bestIndex !== -1) {
                     let escolhida = unassigned.splice(bestIndex, 1)[0];
-                    if (escolhida.isPegarCedo) temPegarCedoNaRota = true;
-                    if (rota.length === 0) cidadeBaseEquipe = escolhida.cidade; // Define a cidade âncora
+                    if (escolhida.isPegarCedo) re.pegouCedo = true;
                     
-                    rota.push(escolhida);
-                } else {
-                    break; // Fim da linha para esta equipe (acabou OS compatível ou extrapolou distância)
-                }
+                    if (re.ignorarProximaDistancia) {
+                        re.ignorarProximaDistancia = false; // Queima o passe livre
+                        re.cidadeBaseEquipe = escolhida.cidade; // Ancorou na nova cidade
+                    } else if (re.rota.length === 0) {
+                        re.cidadeBaseEquipe = escolhida.cidade;
+                    }
+                    
+                    re.rota.push(escolhida);
+                } else { break; }
             }
-            rotasEquipes.push({ equipe, rota });
-        });
+        }
 
-        desenharRotas(rotasEquipes);
-        preencherTabela(rotasEquipes, unassigned, pendencias);
+        await desenharRotasReais(rotasEquipes);
+        preencherTabela(rotasEquipes, unassigned, pendencias, restritasObs2);
     }
 
-    function calcularDistancia(lat1, lon1, lat2, lon2) {
+    function haversine(lat1, lon1, lat2, lon2) {
         const p = 0.017453292519943295; const c = Math.cos;
         const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
         return 12742 * Math.asin(Math.sqrt(a));
     }
 
-    function desenharRotas(rotasEquipes) {
+    async function desenharRotasReais(rotasEquipes) {
         polylineLayers.forEach(layer => map.removeLayer(layer)); polylineLayers = [];
-        rotasEquipes.forEach(re => {
-            if(re.rota.length > 0) {
-                let latLngs = re.rota.map(p => [p.lat, p.lng]);
-                let poly = L.polyline(latLngs, {color: re.equipe.cor, weight: 6, opacity: 0.9}).addTo(map);
-                polylineLayers.push(poly);
+        let allBounds = [];
+
+        for (let re of rotasEquipes) {
+            if(re.rota.length === 0) continue;
+            
+            re.rota.forEach((os, idx) => {
+                let m = L.circleMarker([os.lat, os.lng], {color: re.equipe.cor, radius: 6, fillOpacity: 0.8}).addTo(map);
+                polylineLayers.push(m); allBounds.push([os.lat, os.lng]);
+            });
+
+            if(re.rota.length < 2) continue;
+
+            let coordsOSRM = re.rota.map(p => `${p.lng},${p.lat}`).join(';');
+            let url = `https://router.project-osrm.org/route/v1/driving/${coordsOSRM}?geometries=geojson&overview=full`;
+            
+            try {
+                let res = await fetch(url); let data = await res.json();
+                if(data.code === 'Ok' && data.routes.length > 0) {
+                    let poly = L.geoJSON(data.routes[0].geometry, {style: {color: re.equipe.cor, weight: 6, opacity: 0.7}}).addTo(map);
+                    polylineLayers.push(poly);
+                } else { throw new Error('OSRM Failed'); }
+            } catch(e) {
+                let polyFall = L.polyline(re.rota.map(p => [p.lat, p.lng]), {color: re.equipe.cor, weight: 6, dashArray: '10, 10'}).addTo(map);
+                polylineLayers.push(polyFall);
             }
-        });
-        if(polylineLayers.length > 0) { let group = new L.featureGroup(polylineLayers); map.fitBounds(group.getBounds().pad(0.1)); }
+        }
+        if(allBounds.length > 0) map.fitBounds(L.latLngBounds(allBounds).pad(0.1));
     }
 
     function gerarBadges(os) {
         let badges = '';
-        if (os.isPegarCedo) badges += '<span class="badge badge-cedo">☀️ Pegar Cedo</span>';
+        if (os.isPegarCedo) badges += '<span class="badge badge-cedo">☀️ Cedo</span>';
         if (os.isRetro) badges += '<span class="badge badge-retro">🚜 Retro</span>';
-        if (os.isRedeNaoLocalizada) badges += '<span class="badge badge-rede">❌ Rede Ñ Localizada</span>';
+        if (os.isRedeNaoLocalizada) badges += '<span class="badge badge-rede">❌ Ñ Localizada</span>';
+        if (os.isApoio) badges += '<span class="badge badge-apoio">🤝 Apoio</span>';
+        if (os.isCloneApoio) badges += '<span class="badge badge-apoio" style="background:#0d47a1">🤝 (Prestando Apoio)</span>';
         return badges;
     }
 
-    function preencherTabela(rotasEquipes, sobrou, pendencias) {
+    function preencherTabela(rotasEquipes, sobrou, pendencias, restritasObs2) {
         let tbody = document.querySelector("#tabelaRotas tbody"); tbody.innerHTML = "";
 
         rotasEquipes.forEach(re => {
             if(re.rota.length > 0) {
-                tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:${re.equipe.cor}">🚐 ${re.equipe.nome} <span style="font-weight:normal; font-size: 12px; color:#777;">(${re.equipe.atributo})</span></td></tr>`;
+                let atr = re.equipe.atributos.join(' | ');
+                tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:${re.equipe.cor}">🚐 ${re.equipe.nome} <span style="font-weight:normal; font-size: 11px; color:#777;">(${atr})</span></td></tr>`;
                 re.rota.forEach((os, index) => {
                     tbody.innerHTML += `<tr>
                         <td>-</td><td><strong>${index + 1}º</strong></td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td>
                         <td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td>
-                        <td style="color: #4CAF50;">✔ Na Rota</td>
+                        <td style="color: #4CAF50;">✔ Roteirizado</td>
                     </tr>`;
                 });
             }
         });
 
         if(sobrou.length > 0) {
-            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#ff9800">⚠️ Fila de Espera (Excesso, Bloqueios de Regras ou Distância)</td></tr>`;
-            sobrou.forEach(os => {
-                tbody.innerHTML += `<tr>
-                    <td>-</td><td>-</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td>
-                    <td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td>
-                    <td style="color: #ff9800;">Aguardando Manual</td>
-                </tr>`;
-            });
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#ff9800">⚠️ Fila de Espera (Excesso, Sem Par de Apoio ou Fora do Raio)</td></tr>`;
+            sobrou.forEach(os => { tbody.innerHTML += `<tr><td>-</td><td>-</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td>${gerarBadges(os)}</td><td>${os.geracao}</td><td>${os.vencimento}</td><td style="color: #ff9800;">Fila</td></tr>`; });
+        }
+        
+        if(restritasObs2.length > 0) {
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#000">🚫 Bloqueadas por Observação 2</td></tr>`;
+            restritasObs2.forEach(os => { tbody.innerHTML += `<tr style="background:#e0e0e0; color:#555"><td>-</td><td>-</td><td>${os.os}</td><td>${os.cidade}</td><td>${os.bairro}</td><td><span class="badge badge-bloq">Restrita</span></td><td>${os.geracao}</td><td>${os.vencimento}</td><td style="color:#000;">Bloqueada</td></tr>`; });
         }
 
         if(pendencias.length > 0) {
-            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#f44336">❌ Bairros Não Mapeados</td></tr>`;
-            pendencias.forEach(p => {
-                tbody.innerHTML += `<tr>
-                    <td>-</td><td>-</td><td>${p.os}</td><td>${p.cidade}</td><td>${p.bairro}</td>
-                    <td>-</td><td>${p.geracao}</td><td>${p.vencimento}</td>
-                    <td style="color: #f44336; font-weight: bold;">Sem Mapa</td>
-                </tr>`;
-            });
+            tbody.innerHTML += `<tr class="row-equipe"><td colspan="9" style="color:#f44336">❌ Bairros Sem Mapeamento</td></tr>`;
+            pendencias.forEach(p => { tbody.innerHTML += `<tr><td>-</td><td>-</td><td>${p.os}</td><td>${p.cidade}</td><td>${p.bairro}</td><td>-</td><td>${p.geracao}</td><td>${p.vencimento}</td><td style="color: #f44336; font-weight: bold;">Sem Mapa</td></tr>`; });
         }
     }
 </script>
