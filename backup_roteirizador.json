@@ -1,0 +1,112 @@
+{
+  "dbBairros": {
+    "SÃO PEDRO": {
+      "CENTRO": {
+        "lat": -22.83886178690828,
+        "lng": -42.101111661867385
+      },
+      "CAMPO REDONDO": {
+        "lat": -22.83975806243527,
+        "lng": -42.070795166515346
+      },
+      "MORRO DOS MILAGRES": {
+        "lat": -22.82556066206021,
+        "lng": -42.0744689444434
+      },
+      "BALNEÁRIO": {
+        "lat": -22.839026704114637,
+        "lng": -42.1291461448523
+      },
+      "RUA DO FOGO": {
+        "lat": -22.806656971693414,
+        "lng": -42.12219843891899
+      }
+    },
+    "CABO FRIO": {
+      "CENTRO": {
+        "lat": -22.882323031236496,
+        "lng": -42.015342277201704
+      },
+      "CAJUEIRO": {
+        "lat": -22.86076984855292,
+        "lng": -41.99736231825704
+      },
+      "PALMEIRAS": {
+        "lat": -22.873925972410856,
+        "lng": -42.04487581411667
+      },
+      "PERO": {
+        "lat": -22.85866212941638,
+        "lng": -41.99156291196534
+      }
+    },
+    "BUZIOS": {
+      "RASA": {
+        "lat": -22.742506982956197,
+        "lng": -41.97093718165915
+      }
+    }
+  },
+  "equipes": [
+    {
+      "nome": "CSCT-01",
+      "atributos": [
+        "Desempenho"
+      ],
+      "cor": "#E53935",
+      "idNumero": "01"
+    },
+    {
+      "nome": "CSCT-02",
+      "atributos": [],
+      "cor": "#1E88E5",
+      "idNumero": "02"
+    },
+    {
+      "nome": "CSCT-03",
+      "atributos": [
+        "Pegar cedo",
+        "Retro",
+        "Desempenho"
+      ],
+      "cor": "#43A047",
+      "idNumero": "03"
+    },
+    {
+      "nome": "CSCT-04",
+      "atributos": [],
+      "cor": "#8E24AA",
+      "idNumero": "04"
+    },
+    {
+      "nome": "CSCT-05",
+      "atributos": [],
+      "cor": "#F4511E",
+      "idNumero": "05"
+    },
+    {
+      "nome": "CSCT-06",
+      "atributos": [
+        "Pegar cedo",
+        "Desempenho"
+      ],
+      "cor": "#00ACC1",
+      "idNumero": "06"
+    },
+    {
+      "nome": "CSCT-07",
+      "atributos": [],
+      "cor": "#3949AB",
+      "idNumero": "07"
+    },
+    {
+      "nome": "CSCT-09",
+      "atributos": [
+        "Pegar cedo",
+        "Desempenho"
+      ],
+      "cor": "#E53935",
+      "idNumero": "09"
+    }
+  ]
+}
