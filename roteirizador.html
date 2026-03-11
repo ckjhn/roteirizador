@@ -337,6 +337,116 @@
         .bloco:nth-child(1) { animation-delay: 0s; }
         .bloco:nth-child(2) { animation-delay: 0.08s; }
         .bloco:nth-child(3) { animation-delay: 0.16s; }
+
+        /* === FILTER BAR === */
+        .filter-bar {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-bar-label {
+            font-size: 12px; font-weight: 700; color: var(--text-sub);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            white-space: nowrap; display: flex; align-items: center; gap: 6px;
+        }
+        .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+        .filter-chip {
+            padding: 7px 14px; border-radius: 20px;
+            border: 1.5px solid var(--input-border);
+            background: var(--input-bg); color: var(--text);
+            font-size: 12px; font-weight: 500; cursor: pointer;
+            transition: all 0.15s; user-select: none;
+            display: flex; align-items: center; gap: 6px;
+            font-family: inherit;
+        }
+        .filter-chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+        .filter-chip.active {
+            background: var(--accent); color: white;
+            border-color: var(--accent); font-weight: 700;
+            box-shadow: 0 2px 8px rgba(79,90,255,0.25);
+        }
+        .filter-chip .chip-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            display: inline-block; flex-shrink: 0;
+        }
+        .filter-chip.active .chip-dot { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
+
+        /* === AI INSIGHTS PANEL === */
+        .ai-panel {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: none;
+        }
+        .ai-panel.visible { display: block; animation: fadeInUp 0.4s ease-out; }
+        .ai-panel-header {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(79,90,255,0.08));
+            border-bottom: 1px solid var(--panel-border);
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none;
+        }
+        .ai-panel-header h3 {
+            font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 0;
+        }
+        .ai-panel-header .ai-badge {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; padding: 3px 8px; border-radius: 20px;
+            background: linear-gradient(135deg, #a855f7, #4f5aff);
+            color: white;
+        }
+        .ai-panel-header .toggle-icon { font-size: 18px; color: var(--text-sub); transition: transform 0.3s; }
+        .ai-panel-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .ai-panel-body { padding: 18px 20px; }
+        .ai-panel-body.collapsed { display: none; }
+
+        .ai-alert {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .ai-alert:last-child { margin-bottom: 0; }
+        .ai-alert-critical { background: rgba(239,68,68,0.06); border-color: var(--danger); }
+        .ai-alert-warning { background: rgba(245,158,11,0.06); border-color: var(--warning); }
+        .ai-alert-info { background: rgba(59,130,246,0.06); border-color: var(--info); }
+        .ai-alert-success { background: rgba(34,197,94,0.06); border-color: var(--success); }
+        .ai-alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .ai-alert-content { flex: 1; }
+        .ai-alert-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+        .ai-alert-desc { font-size: 12px; color: var(--text-sub); line-height: 1.6; }
+        .ai-alert-desc strong { color: var(--text); }
+        .ai-suggestion {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--accent-soft); color: var(--accent);
+            padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+            margin-top: 6px; margin-right: 4px;
+        }
+        .ai-summary {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            padding: 12px 16px; background: var(--input-bg);
+            border-radius: var(--radius-sm); margin-bottom: 14px;
+        }
+        .ai-stat { text-align: center; }
+        .ai-stat-num { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .ai-stat-label { font-size: 10px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.4px; }
+        .ai-stat-danger .ai-stat-num { color: var(--danger); }
+        .ai-stat-warning .ai-stat-num { color: var(--warning); }
+        .ai-stat-success .ai-stat-num { color: var(--success); }
+        .ai-stat-info .ai-stat-num { color: var(--info); }
+        .ai-empty { text-align: center; padding: 20px; color: var(--text-sub); font-size: 13px; }
     </style>
 </head>
 <body>
@@ -404,6 +514,21 @@
         </div>
     </div>
 
+    <!-- FILTER BAR -->
+    <div class="filter-bar" id="filterBar" style="display:none;">
+        <span class="filter-bar-label">🔍 Filtrar Equipe</span>
+        <div class="filter-chips" id="filterChips"></div>
+    </div>
+
+    <!-- AI INSIGHTS PANEL -->
+    <div class="ai-panel" id="aiPanel">
+        <div class="ai-panel-header" id="aiPanelHeader" onclick="toggleAiPanel()">
+            <h3>🧠 Análise Inteligente <span class="ai-badge">AI</span></h3>
+            <span class="toggle-icon">▾</span>
+        </div>
+        <div class="ai-panel-body" id="aiPanelBody"></div>
+    </div>
+
     <div class="map-wrapper"><div id="map"></div></div>
 
     <div class="table-section">
@@ -463,6 +588,13 @@
     let dbBairros = appData.dbBairros;
     let equipes = appData.equipes;
     let editIndex = -1;
+
+    // --- ESTADOS DE FILTRO E AI ---
+    let lastRotasEquipes = [];
+    let lastUnassigned = [];
+    let lastPendencias = [];
+    let lastRestritasObs2 = [];
+    let activeFilter = '__all__';
 
     if(localStorage.getItem('dbBairros') && Object.keys(dbBairros).length === 0) {
         dbBairros = JSON.parse(localStorage.getItem('dbBairros')); salvarEstadoGeral();
@@ -896,6 +1028,15 @@
 
         await desenharRotasReais(rotasEquipes);
         preencherTabela(rotasEquipes, unassigned, pendencias, restritasObs2);
+
+        // Armazenar para filtro e AI
+        lastRotasEquipes = rotasEquipes;
+        lastUnassigned = unassigned;
+        lastPendencias = pendencias;
+        lastRestritasObs2 = restritasObs2;
+        activeFilter = '__all__';
+        construirFilterBar(rotasEquipes);
+        analisarPrioridades(rotasEquipes, unassigned, pendencias, restritasObs2);
     }
 
     function haversine(lat1, lon1, lat2, lon2) {
@@ -989,6 +1130,265 @@
                 tbody.innerHTML += `<tr><td>—</td><td>—</td><td>${p.os}</td><td>${p.cidade}</td><td>${p.bairro}</td><td>—</td><td>${p.geracao}</td><td>${p.vencimento}</td><td>${gerarBadgeSituacao(p)}</td><td><span class="status-sem-mapa">Sem Mapa</span></td></tr>`;
             });
         }
+    }
+
+    // =====================================================
+    // === FILTER BAR - Filtro por Equipe
+    // =====================================================
+    function construirFilterBar(rotasEquipes) {
+        const bar = document.getElementById('filterBar');
+        const chips = document.getElementById('filterChips');
+        if (!rotasEquipes || rotasEquipes.length === 0) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        chips.innerHTML = '';
+
+        // Chip "Todas"
+        let allChip = document.createElement('button');
+        allChip.className = 'filter-chip active';
+        allChip.innerHTML = '📋 Todas as Equipes';
+        allChip.dataset.filter = '__all__';
+        allChip.onclick = () => aplicarFiltro('__all__');
+        chips.appendChild(allChip);
+
+        // Chip por equipe
+        rotasEquipes.forEach(re => {
+            if (re.rota.length === 0) return;
+            let chip = document.createElement('button');
+            chip.className = 'filter-chip';
+            chip.dataset.filter = re.equipe.nome;
+            chip.innerHTML = `<span class="chip-dot" style="background:${re.equipe.cor};"></span>${re.equipe.nome} <span style="opacity:0.6;font-size:11px;">(${re.rota.length})</span>`;
+            chip.onclick = () => aplicarFiltro(re.equipe.nome);
+            chips.appendChild(chip);
+        });
+    }
+
+    async function aplicarFiltro(filtro) {
+        activeFilter = filtro;
+        // Atualizar chips visuais
+        document.querySelectorAll('.filter-chip').forEach(c => {
+            c.classList.toggle('active', c.dataset.filter === filtro);
+        });
+
+        if (filtro === '__all__') {
+            await desenharRotasReais(lastRotasEquipes);
+            preencherTabela(lastRotasEquipes, lastUnassigned, lastPendencias, lastRestritasObs2);
+        } else {
+            let filtered = lastRotasEquipes.filter(re => re.equipe.nome === filtro);
+            await desenharRotasReais(filtered);
+            preencherTabela(filtered, [], [], []);
+        }
+    }
+
+    // =====================================================
+    // === AI INSIGHTS - Análise de Prioridades
+    // =====================================================
+    function toggleAiPanel() {
+        let header = document.getElementById('aiPanelHeader');
+        let body = document.getElementById('aiPanelBody');
+        header.classList.toggle('collapsed');
+        body.classList.toggle('collapsed');
+    }
+
+    function analisarPrioridades(rotasEquipes, sobrou, pendencias, restritasObs2) {
+        const panel = document.getElementById('aiPanel');
+        const body = document.getElementById('aiPanelBody');
+        panel.classList.add('visible');
+        body.innerHTML = '';
+
+        // Coletar TODAS as OS (roteirizadas + fila + pendências)
+        let todasOS = [];
+        rotasEquipes.forEach(re => re.rota.forEach(os => {
+            if (!os.isCloneApoio) todasOS.push({...os, equipeAlocada: re.equipe.nome, status: 'roteirizado'});
+        }));
+        sobrou.forEach(os => todasOS.push({...os, equipeAlocada: null, status: 'fila'}));
+        pendencias.forEach(os => todasOS.push({...os, equipeAlocada: null, status: 'sem_mapa'}));
+
+        // Stats
+        let vencidas = todasOS.filter(o => o.diasVencido > 5);
+        let criticas = todasOS.filter(o => o.diasVencido > 0 && o.diasVencido <= 5);
+        let quase = todasOS.filter(o => o.diasVencido >= -2 && o.diasVencido <= 0);
+        let noPrazo = todasOS.filter(o => o.diasVencido < -2);
+        let filaEspera = sobrou.length;
+
+        // Summary
+        let summaryHtml = `<div class="ai-summary">
+            <div class="ai-stat ai-stat-danger"><div class="ai-stat-num">${vencidas.length}</div><div class="ai-stat-label">Vencidas</div></div>
+            <div class="ai-stat ai-stat-warning"><div class="ai-stat-num">${criticas.length}</div><div class="ai-stat-label">Críticas</div></div>
+            <div class="ai-stat" style=""><div class="ai-stat-num" style="color:#eab308;">${quase.length}</div><div class="ai-stat-label">Quase Venc.</div></div>
+            <div class="ai-stat ai-stat-success"><div class="ai-stat-num">${noPrazo.length}</div><div class="ai-stat-label">No Prazo</div></div>
+            <div class="ai-stat ai-stat-info"><div class="ai-stat-num">${filaEspera}</div><div class="ai-stat-label">Na Fila</div></div>
+            <div class="ai-stat"><div class="ai-stat-num">${pendencias.length}</div><div class="ai-stat-label">Sem Mapa</div></div>
+        </div>`;
+        body.innerHTML += summaryHtml;
+
+        let alertas = [];
+
+        // ---- ANÁLISE 1: OS Vencidas há muito tempo (> 10 dias) ----
+        let muitoVencidas = todasOS.filter(o => o.diasVencido > 10).sort((a,b) => b.diasVencido - a.diasVencido);
+        if (muitoVencidas.length > 0) {
+            let top5 = muitoVencidas.slice(0, 5);
+            let osListHtml = top5.map(os => {
+                let statusTag = os.status === 'roteirizado' 
+                    ? `<span style="color:var(--success);font-weight:600;">✔ ${os.equipeAlocada}</span>`
+                    : os.status === 'fila' 
+                    ? `<span style="color:var(--warning);font-weight:600;">⏳ Fila de Espera</span>`
+                    : `<span style="color:var(--danger);font-weight:600;">❌ Sem Mapa</span>`;
+                return `<strong>OS ${os.os}</strong> — ${os.cidade}/${os.bairro} — <strong>${os.diasVencido} dias vencida</strong> → ${statusTag}`;
+            }).join('<br>');
+            
+            let sugHtml = '';
+            let naoRoteirizadas = muitoVencidas.filter(o => o.status !== 'roteirizado');
+            if (naoRoteirizadas.length > 0) {
+                sugHtml += '<br><div style="margin-top:8px;">';
+                naoRoteirizadas.forEach(os => {
+                    let sugestoes = gerarSugestaoOS(os, rotasEquipes);
+                    sugHtml += `<div style="margin-top:4px;">OS ${os.os}: `;
+                    sugestoes.forEach(s => { sugHtml += `<span class="ai-suggestion">${s}</span>`; });
+                    sugHtml += '</div>';
+                });
+                sugHtml += '</div>';
+            }
+
+            alertas.push({
+                tipo: 'critical',
+                icon: '🚨',
+                titulo: `${muitoVencidas.length} OS vencida${muitoVencidas.length > 1 ? 's' : ''} há mais de 10 dias`,
+                desc: osListHtml + sugHtml
+            });
+        }
+
+        // ---- ANÁLISE 2: OS Vencidas (1-10 dias) na fila de espera ----
+        let vencidasNaFila = sobrou.filter(o => o.diasVencido > 0).sort((a,b) => b.diasVencido - a.diasVencido);
+        if (vencidasNaFila.length > 0) {
+            let top3 = vencidasNaFila.slice(0, 3);
+            let listHtml = top3.map(os => {
+                let sugestoes = gerarSugestaoOS(os, rotasEquipes);
+                let sugTags = sugestoes.map(s => `<span class="ai-suggestion">${s}</span>`).join('');
+                return `<strong>OS ${os.os}</strong> (${os.bairro}) — ${os.diasVencido}d vencida ${sugTags}`;
+            }).join('<br>');
+            alertas.push({
+                tipo: 'warning',
+                icon: '⚠️',
+                titulo: `${vencidasNaFila.length} OS vencida${vencidasNaFila.length > 1 ? 's' : ''} parada${vencidasNaFila.length > 1 ? 's' : ''} na Fila de Espera`,
+                desc: listHtml
+            });
+        }
+
+        // ---- ANÁLISE 3: OS Quase vencendo (estão por vencer em 0-2 dias) ----
+        let quaseVencendo = todasOS.filter(o => o.diasVencido >= -2 && o.diasVencido <= 0 && o.status !== 'roteirizado');
+        if (quaseVencendo.length > 0) {
+            let listHtml = quaseVencendo.slice(0, 3).map(os => {
+                return `<strong>OS ${os.os}</strong> (${os.bairro}) — vence em ${Math.abs(os.diasVencido)} dia(s)`;
+            }).join('<br>');
+            alertas.push({
+                tipo: 'warning',
+                icon: '⏰',
+                titulo: `${quaseVencendo.length} OS prestes a vencer SEM equipe alocada`,
+                desc: listHtml + '<br><span class="ai-suggestion">💡 Priorizar na próxima roteirização</span>'
+            });
+        }
+
+        // ---- ANÁLISE 4: Equipes com carga desbalanceada ----
+        let cargas = rotasEquipes.filter(re => re.rota.length > 0).map(re => ({nome: re.equipe.nome, qtd: re.rota.length}));
+        if (cargas.length >= 2) {
+            let max = Math.max(...cargas.map(c => c.qtd));
+            let min = Math.min(...cargas.map(c => c.qtd));
+            if (max - min >= 3) {
+                let eqMax = cargas.find(c => c.qtd === max);
+                let eqMin = cargas.find(c => c.qtd === min);
+                alertas.push({
+                    tipo: 'info',
+                    icon: '⚖️',
+                    titulo: 'Carga desbalanceada entre equipes',
+                    desc: `<strong>${eqMax.nome}</strong> tem ${eqMax.qtd} OS enquanto <strong>${eqMin.nome}</strong> tem ${eqMin.qtd}. Considere redistribuir manualmente.`
+                });
+            }
+        }
+
+        // ---- ANÁLISE 5: OS sem mapeamento ----
+        if (pendencias.length > 0) {
+            let cidades = [...new Set(pendencias.map(p => p.cidade + '/' + p.bairro))];
+            alertas.push({
+                tipo: 'info',
+                icon: '📍',
+                titulo: `${pendencias.length} OS sem mapeamento de bairro`,
+                desc: `Bairros faltando: <strong>${cidades.slice(0,5).join(', ')}</strong>${cidades.length > 5 ? ` e mais ${cidades.length - 5}` : ''}. Clique no mapa para mapear.`
+            });
+        }
+
+        // ---- ANÁLISE 6: Tudo OK ----
+        if (vencidas.length === 0 && criticas.length === 0 && filaEspera === 0) {
+            alertas.push({
+                tipo: 'success',
+                icon: '✅',
+                titulo: 'Situação sob controle',
+                desc: 'Todas as OS estão dentro do prazo e alocadas para equipes. Bom trabalho!'
+            });
+        }
+
+        // Renderizar alertas
+        if (alertas.length === 0) {
+            body.innerHTML += '<div class="ai-empty">Nenhuma análise disponível. Gere uma rota primeiro.</div>';
+        } else {
+            alertas.forEach(a => {
+                body.innerHTML += `<div class="ai-alert ai-alert-${a.tipo}">
+                    <span class="ai-alert-icon">${a.icon}</span>
+                    <div class="ai-alert-content">
+                        <div class="ai-alert-title">${a.titulo}</div>
+                        <div class="ai-alert-desc">${a.desc}</div>
+                    </div>
+                </div>`;
+            });
+        }
+    }
+
+    function gerarSugestaoOS(os, rotasEquipes) {
+        let sugestoes = [];
+
+        // Se é retro e nenhuma equipe retro, sugerir retro
+        if (os.isRetro) {
+            let temRetro = rotasEquipes.some(re => re.equipe.atributos.includes('Retro'));
+            if (!temRetro) {
+                sugestoes.push('🚜 Criar equipe Retro');
+            } else {
+                sugestoes.push('🚜 Alocar via Retro');
+            }
+        }
+
+        // Se é pegar cedo
+        if (os.isPegarCedo) {
+            sugestoes.push('☀️ Equipe Pegar Cedo');
+        }
+
+        // Se é apoio
+        if (os.isApoio) {
+            sugestoes.push('🤝 Enviar 2 equipes (Comboio)');
+        }
+
+        // Se está vencida há muito tempo e não tem sugestão específica
+        if (os.diasVencido > 15 && sugestoes.length === 0) {
+            sugestoes.push('⚡ Prioridade máxima');
+            sugestoes.push('🕐 Pegar cedo amanhã');
+        } else if (os.diasVencido > 5 && sugestoes.length === 0) {
+            sugestoes.push('⚡ Priorizar na próxima rota');
+        }
+
+        // Se não tem mapa
+        if (os.status === 'sem_mapa') {
+            sugestoes.push('📍 Mapear bairro primeiro');
+        }
+
+        // Se está na fila, verificar se tem equipe com espaço
+        if (os.status === 'fila') {
+            let equipesComEspaco = rotasEquipes.filter(re => re.rota.length < 6);
+            if (equipesComEspaco.length > 0) {
+                sugestoes.push(`📥 ${equipesComEspaco[0].equipe.nome} tem espaço`);
+            } else {
+                sugestoes.push('🚐 Todas equipes lotadas');
+            }
+        }
+
+        return sugestoes.length > 0 ? sugestoes : ['📋 Incluir na próxima roteirização'];
     }
 </script>
 
