@@ -927,6 +927,10 @@
     <div class="filter-bar" id="filterBar" style="display:none;">
         <span class="filter-bar-label">🔍 Filtrar Equipe</span>
         <div class="filter-chips" id="filterChips"></div>
+        <!-- Dropdown para filtrar pela equipe -->
+        <select id="filterSelectEquipe" style="margin-left:10px; padding:6px 10px; font-size:12px; border:1.5px solid var(--input-border); border-radius: var(--radius-xs); background: var(--input-bg); color: var(--text);" onchange="aplicarFiltro(this.value)">
+            <option value="__all__">Todas</option>
+        </select>
     </div>
 
     <!-- AI INSIGHTS PANEL -->
@@ -939,6 +943,25 @@
     </div>
 
     <div class="map-wrapper"><div id="map"></div></div>
+
+    <!-- SEÇÃO DE BAIRROS MAPEADOS -->
+    <div class="table-section" id="bairrosSection" style="display:none;">
+        <div class="table-section-header">📍 Bairros Mapeados</div>
+        <div class="table-responsive">
+            <table id="tabelaBairros">
+                <thead>
+                    <tr>
+                        <th>Cidade</th>
+                        <th>Bairro</th>
+                        <th>Lat</th>
+                        <th>Lng</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 
     <div class="table-section">
         <div class="table-section-header">📊 Tabela de Despacho</div>
@@ -1256,15 +1279,115 @@
     let tempLat = null, tempLng = null, polylineLayers = [];
     let reorderPreviewMap = null;
     let marcadoresBairros = [];
+    
+    // === Funções de Gerenciamento de Bairros ===
+    // Variável para armazenar a identificação do bairro atualmente em edição
+    let editBairroOrig = null;
+
+    /**
+     * Atualiza os marcadores de bairros no mapa.
+     * Remove todos os marcadores anteriores e adiciona um marcador para cada
+     * bairro cadastrado em `dbBairros`. Cada marcador exibe a cidade e o bairro
+     * ao passar o mouse e permite abrir o modal de edição ao ser clicado.
+     */
+    function updateMapMarkers() {
+        // Limpar marcadores existentes
+        marcadoresBairros.forEach(m => { try { map.removeLayer(m); } catch (e) {} });
+        marcadoresBairros = [];
+        // Adicionar marcadores para cada bairro
+        for (let cidade in dbBairros) {
+            for (let bairro in dbBairros[cidade]) {
+                let info = dbBairros[cidade][bairro];
+                if (!info) continue;
+                let marker = L.marker([info.lat, info.lng]).addTo(map);
+                marker.bindTooltip(`${cidade} - ${bairro}`, { permanent: false });
+                marker.on('click', () => {
+                    editarBairro(cidade, bairro);
+                });
+                marcadoresBairros.push(marker);
+            }
+        }
+    }
+
+    /**
+     * Reconstroi a tabela de bairros exibida abaixo do mapa. Para cada
+     * entrada em `dbBairros`, é criada uma linha com o nome da cidade, o
+     * bairro, as coordenadas e botões de edição e exclusão. A seção é
+     * exibida somente se houver pelo menos um bairro cadastrado.
+     */
+    function atualizarTabelaBairros() {
+        let tbody = document.querySelector('#tabelaBairros tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let tem = false;
+        for (let cidade in dbBairros) {
+            for (let bairro in dbBairros[cidade]) {
+                tem = true;
+                let dados = dbBairros[cidade][bairro];
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${cidade}</td>
+                    <td>${bairro}</td>
+                    <td>${dados.lat != null ? dados.lat.toFixed(5) : ''}</td>
+                    <td>${dados.lng != null ? dados.lng.toFixed(5) : ''}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="editarBairro('${cidade}','${bairro}')">✎</button>
+                        <button class="btn-sm btn-danger" onclick="deletarBairro('${cidade}','${bairro}')">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+        let section = document.getElementById('bairrosSection');
+        if (section) section.style.display = tem ? 'block' : 'none';
+    }
+
+    /**
+     * Abre o modal de mapeamento para editar um bairro já existente. A função
+     * preenche os campos com a cidade e bairro originais e armazena
+     * `editBairroOrig` para que `salvarBairro` saiba se está editando um
+     * registro existente.
+     *
+     * @param {string} cidade Nome da cidade
+     * @param {string} bairro Nome do bairro
+     */
+    function editarBairro(cidade, bairro) {
+        if (!dbBairros[cidade] || !dbBairros[cidade][bairro]) return;
+        editBairroOrig = { cidade, bairro };
+        let dados = dbBairros[cidade][bairro];
+        // Preencher coords temporárias para que, ao salvar, mantenha as coordenadas existentes caso o usuário não clique no mapa
+        tempLat = dados.lat;
+        tempLng = dados.lng;
+        document.getElementById('inputCidade').value = cidade;
+        document.getElementById('inputBairro').value = bairro;
+        document.getElementById('modalMapa').style.display = 'block';
+        document.getElementById('modalOverlay').style.display = 'block';
+    }
+
+    /**
+     * Exclui um bairro do banco de dados após confirmação do usuário. Se a
+     * cidade ficar vazia, remove também a chave da cidade. Após excluir,
+     * salva o estado geral e atualiza os marcadores e a tabela.
+     *
+     * @param {string} cidade Nome da cidade
+     * @param {string} bairro Nome do bairro
+     */
+    function deletarBairro(cidade, bairro) {
+        if (!dbBairros[cidade] || !dbBairros[cidade][bairro]) return;
+        if (!confirm(`Tem certeza que deseja remover o bairro ${bairro} em ${cidade}?`)) return;
+        delete dbBairros[cidade][bairro];
+        if (Object.keys(dbBairros[cidade]).length === 0) delete dbBairros[cidade];
+        salvarEstadoGeral();
+        updateMapMarkers();
+        atualizarTabelaBairros();
+    }
     const map = L.map('map').setView([-22.85, -42.05], 10); 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-    for (const cid in dbBairros) {
-        for (const bai in dbBairros[cid]) {
-            let m = L.marker([dbBairros[cid][bai].lat, dbBairros[cid][bai].lng]).addTo(map).bindPopup(`<strong>${bai}</strong><br>${cid}`).bindTooltip(bai, {permanent: true, direction: 'right', offset: [12, 0], className: 'bairro-label'});
-            marcadoresBairros.push(m);
-        }
-    }
+    // Inicializar marcadores dos bairros usando função dedicada
+    updateMapMarkers();
+    // Preencher tabela de bairros
+    if (typeof atualizarTabelaBairros === 'function') atualizarTabelaBairros();
 
     map.on('click', function(e) {
         tempLat = e.latlng.lat; tempLng = e.latlng.lng;
@@ -1282,10 +1405,22 @@
         let c = document.getElementById('inputCidade').value.trim().toUpperCase();
         let b = document.getElementById('inputBairro').value.trim().toUpperCase();
         if(!c || !b) return;
+        // If editing an existing bairro, remove the old entry
+        if (editBairroOrig) {
+            let oc = editBairroOrig.cidade;
+            let ob = editBairroOrig.bairro;
+            if (dbBairros[oc] && dbBairros[oc][ob]) {
+                delete dbBairros[oc][ob];
+                if (Object.keys(dbBairros[oc]).length === 0) delete dbBairros[oc];
+            }
+        }
         if (!dbBairros[c]) dbBairros[c] = {};
         dbBairros[c][b] = { lat: tempLat, lng: tempLng };
         salvarEstadoGeral();
-        L.marker([tempLat, tempLng]).addTo(map).bindPopup(`<strong>${b}</strong><br>${c}`).bindTooltip(b, {permanent: true, direction: 'right', offset: [12, 0], className: 'bairro-label'});
+        // Refresh markers and bairros table
+        updateMapMarkers();
+        if (typeof atualizarTabelaBairros === 'function') atualizarTabelaBairros();
+        editBairroOrig = null;
         fecharModais();
     }
 
@@ -1625,7 +1760,11 @@
             let excelLng = parseFloat(os['Longitude']);
             let hasExcelCoords = !isNaN(excelLat) && !isNaN(excelLng) && excelLat !== 0 && excelLng !== 0;
 
-            let osData = { os: numOS, cidade, bairro, geracao: dGeracao.toLocaleDateString(), vencimento: dVenc.toLocaleDateString(), rawScore: score, diasVencido, isPegarCedo, isRetro, isRedeNaoLocalizada, isApoio, canceladasPor, usouCoordenadaExcel: false };
+            // Capturar tipo de serviço e tipo de solo (uppercase) se existirem
+            let tipoServico = ((os['Tipo de Serviço'] || os['Tipo de Servico'] || os['Tipo de Serviço '] || os['Tipo de Servico '] || '') + '').toString().trim().toUpperCase();
+            let tipoSolo = ((os['Tipo de Solo'] || os['Tipo de Solo '] || '') + '').toString().trim().toUpperCase();
+
+            let osData = { os: numOS, cidade, bairro, geracao: dGeracao.toLocaleDateString(), vencimento: dVenc.toLocaleDateString(), rawScore: score, diasVencido, isPegarCedo, isRetro, isRedeNaoLocalizada, isApoio, canceladasPor, usouCoordenadaExcel: false, tipoServico, tipoSolo };
 
             if (obs2.length > 0) { restritasObs2.push(osData); return; }
 
@@ -1984,6 +2123,25 @@
             chip.onclick = () => aplicarFiltro(re.equipe.nome);
             chips.appendChild(chip);
         });
+
+        // Populate dropdown select for equipe filtering
+        let select = document.getElementById('filterSelectEquipe');
+        if (select) {
+            select.innerHTML = '';
+            let optAll = document.createElement('option');
+            optAll.value = '__all__';
+            optAll.textContent = 'Todas';
+            select.appendChild(optAll);
+            rotasEquipes.forEach(re => {
+                if (re.rota.length === 0) return;
+                let opt = document.createElement('option');
+                opt.value = re.equipe.nome;
+                opt.textContent = `${re.equipe.nome} (${re.rota.length})`;
+                select.appendChild(opt);
+            });
+            // Reset selected value to active filter if available
+            select.value = activeFilter;
+        }
     }
 
     async function aplicarFiltro(filtro) {
@@ -1992,6 +2150,10 @@
         document.querySelectorAll('.filter-chip').forEach(c => {
             c.classList.toggle('active', c.dataset.filter === filtro);
         });
+
+        // Atualizar dropdown de filtro, se presente
+        let selEq = document.getElementById('filterSelectEquipe');
+        if (selEq) selEq.value = filtro;
 
         if (filtro === '__all__') {
             await desenharRotasReais(lastRotasEquipes);
